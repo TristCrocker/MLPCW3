@@ -10,9 +10,9 @@ from sklearn.model_selection import train_test_split
 
 # Set paths and parameters
 PATH = './'
-TRAIN = '../data/train/'
-TEST = '../data/test/'
-SEGMENTATION = '../segmentations/input/train_ship_segmentations.csv'
+TRAIN = '../data/train_v2/'
+TEST = '../data/test_v2/'
+SEGMENTATION = '../data/train_ship_segmentations_v2.csv'
 exclude_list = ['6384c3e78.jpg','13703f040.jpg', '14715c06d.jpg', '33e0ff2d5.jpg',
                 '4d4e09f2a.jpg', '877691df8.jpg', '8b909bb20.jpg', 'a8d99130e.jpg', 
                 'ad55c3143.jpg', 'c8260c541.jpg', 'd6c7f17c7.jpg', 'dc3e7c901.jpg',

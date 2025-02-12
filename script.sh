@@ -36,4 +36,4 @@ export DATASET_DIR=${TMP}/datasets/
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlp
 conda install -y fastai scikit-learn pandas numpy
 cd /home/${STUDENT_ID}/..
-python main.py
+python baseline/main.py
