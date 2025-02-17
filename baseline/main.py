@@ -9,10 +9,14 @@ import os
 from sklearn.model_selection import train_test_split
 
 # Set paths and parameters
-PATH = './'
-TRAIN = 'data/train_v2'
-TEST = 'data/test_v2'
-SEGMENTATION = 'data/train_ship_segmentations_v2.csv'
+DATASET_DIR = os.getenv("DATASET_DIR", "data")  # Default to "data" if not set
+OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  # Default to "output" if not set
+os.makedirs(OUTPUT_DIR, exist_ok=True)  # Ensure output directory exists
+
+PATH = 'output'
+TRAIN = os.path.join(DATASET_DIR, "train_v2")
+TEST = os.path.join(DATASET_DIR, "test_v2")
+SEGMENTATION = os.path.join(DATASET_DIR, "train_ship_segmentations_v2.csv")
 exclude_list = ['6384c3e78.jpg','13703f040.jpg', '14715c06d.jpg', '33e0ff2d5.jpg',
                 '4d4e09f2a.jpg', '877691df8.jpg', '8b909bb20.jpg', 'a8d99130e.jpg', 
                 'ad55c3143.jpg', 'c8260c541.jpg', 'd6c7f17c7.jpg', 'dc3e7c901.jpg',
@@ -44,4 +48,20 @@ learn.fine_tune(3)
 
 # Optionally, obtain predictions on the test set using Test Time Augmentation (TTA)
 preds, targs = learn.tta(dl=test_dl)
-print(preds)
+
+# Evaluate the model on the validation set
+eval_results = learn.validate()
+
+# Extract metric names from the learner
+metric_names = ["Loss"] + [m.name if hasattr(m, "name") else str(m) for m in learn.metrics]
+
+# Create a DataFrame for evaluation results
+df_eval = pd.DataFrame([eval_results], columns=metric_names)
+
+# Define output file path (ensure it's an accessible location)
+output_csv_path = os.path.join(OUTPUT_DIR, "evaluation_results.csv")
+
+# Save DataFrame to a CSV file
+df_eval.to_csv(output_csv_path, index=False)
+
+print(f"Model evaluation results saved to {output_csv_path}")
