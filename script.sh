@@ -37,7 +37,7 @@ mkdir -p ${OUTPUT_DIR}
 
 # Activate the virtual environment
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlpcw3
-conda install -y fastai scikit-learn pandas numpy
+conda install -y fastai scikit-learn pandas "numpy>=1.17.3,<1.25.0"
 
 # Run the Python script
 cd /home/${STUDENT_ID}/MLPCW3/

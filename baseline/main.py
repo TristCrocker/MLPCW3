@@ -34,7 +34,7 @@ dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
 # Create a learner.
 
 # The parameter ps=0.5 will set the dropout in the head to 50%.
-learn = cnn_learner(dls, arch, metrics=accuracy, ps=0.5)
+learn = vision_learner(dls, arch, metrics=accuracy, ps=0.5)
 
 # Set the optimizer to Adam (this is usually the default, but you can specify it explicitly)
 learn.opt_func = Adam
@@ -49,9 +49,12 @@ learn.fine_tune(3)
 # Optionally, obtain predictions on the test set using Test Time Augmentation (TTA)
 preds, targs = learn.tta(dl=test_dl)
 
+print(preds)
+
 # Evaluate the model on the validation set
 eval_results = learn.validate()
 
+print(eval_results)
 # Extract metric names from the learner
 metric_names = ["Loss"] + [m.name if hasattr(m, "name") else str(m) for m in learn.metrics]
 
