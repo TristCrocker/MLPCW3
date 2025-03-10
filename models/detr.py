@@ -24,6 +24,9 @@ class Detr(nn.Module):
     def forward(self, images):
         #Extract
         features = self.backbone(images)
+
+        features = features if isinstance(features, torch.Tensor) else features['layer4']
+
         features = self.conv1x1(features['layer4'])
         features = features.flatten(2).permute(2, 0, 1)
 
