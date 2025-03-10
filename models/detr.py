@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torchvision.models.resnet import resnet50, ResNet50_Weights
+from torchvision.models.feature_extraction import create_feature_extractor
 
 
 
@@ -11,7 +12,7 @@ class Detr(nn.Module):
         super(Detr, self).__init__()
 
         #Backbone
-        self.backbone = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
+        self.backbone = create_feature_extractor(resnet50(weights=ResNet50_Weights.IMAGENET1K_V1), return_nodes={'layer4': 'feature_map'}  # Extract 'layer4')
         self.conv1x1 = nn.Conv2d(2048, hidden_dim, kernel_size=1)
 
         #Transformer
@@ -29,7 +30,7 @@ class Detr(nn.Module):
         features = self.backbone(images)
 
 
-        features = self.conv1x1(features)
+        features = self.conv1x1(features['layer4'])
         features = features.flatten(2).permute(2, 0, 1)
 
         #Pos Encoding
