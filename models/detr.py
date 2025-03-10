@@ -12,7 +12,7 @@ class Detr(nn.Module):
         super(Detr, self).__init__()
 
         #Backbone
-        self.backbone = create_feature_extractor(resnet50(weights=ResNet50_Weights.IMAGENET1K_V1), return_nodes={'layer4': 'feature_map'}  # Extract 'layer4')
+        self.backbone = create_feature_extractor(resnet50(weights=ResNet50_Weights.IMAGENET1K_V1), return_nodes={'layer4': 'feature_map'})  # Extract 'layer4')
         self.conv1x1 = nn.Conv2d(2048, hidden_dim, kernel_size=1)
 
         #Transformer
