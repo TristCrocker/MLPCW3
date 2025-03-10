@@ -41,7 +41,7 @@ conda install -y fastai scikit-learn pandas "numpy>=1.17.3,<1.25.0"
 
 # Run the Python script
 cd /home/${STUDENT_ID}/MLPCW3/
-python baseline/main.py
+python main.py
 
 # Save results to home directory
 RESULTS_DIR=/home/${STUDENT_ID}/MLPCW3/results/
