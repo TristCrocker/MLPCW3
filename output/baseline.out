@@ -1,0 +1,18 @@
+Copying dataset to scratch space...
+Dataset is now in /disk/scratch/s2152640//datasets/
+Channels:
+ - defaults
+Platform: linux-64
+Collecting package metadata (repodata.json): ...working... done
+Solving environment: ...working... done
+
+# All requested packages already installed.
+
+█
+epoch     train_loss  valid_loss  accuracy  time    
+█
+█
+0         0.159753    0.105690    0.959909  28:44:56  
+█
+epoch     train_loss  valid_loss  accuracy  time    
+█
