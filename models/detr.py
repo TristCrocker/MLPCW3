@@ -1,18 +1,21 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from torchvision.models.resnet import resnet50
+from torchvision.models.resnet import resnet50, ResNet50_Weights
+
+
+
 
 class Detr(nn.Module):
     def __init__(self, num_queries, hidden_dim=256, num_heads=8, num_encoder_layers=6, num_decoder_layers=6):
         super(Detr, self).__init__()
 
         #Backbone
-        self.backbone = resnet50(pretrained=True)
+        self.backbone = resnet50(weights=ResNet50_Weights.IMAGENET1K_V1)
         self.conv1x1 = nn.Conv2d(2048, hidden_dim, kernel_size=1)
 
         #Transformer
-        self.transformer = nn.Transformer(d_model=hidden_dim, nhead=num_heads, num_encoder_layers=num_encoder_layers, num_decoder_layers=num_decoder_layers)
+        self.transformer = nn.Transformer(d_model=hidden_dim, nhead=num_heads, num_encoder_layers=num_encoder_layers, num_decoder_layers=num_decoder_layers, batch_first=True)
 
         #Embeddings
         self.embeddings = nn.Parameter(torch.rand(num_queries, hidden_dim))
@@ -25,9 +28,8 @@ class Detr(nn.Module):
         #Extract
         features = self.backbone(images)
 
-        features = features if isinstance(features, torch.Tensor) else features['layer4']
 
-        features = self.conv1x1(features['layer4'])
+        features = self.conv1x1(features)
         features = features.flatten(2).permute(2, 0, 1)
 
         #Pos Encoding
