@@ -9,7 +9,15 @@ def train_model(model, dataloader, epochs=3):
         for images, targets in dataloader:
             optimizer.zero_grad()
             output = model(images)
-            loss = criterion(output['pred_logits'].as_subclass(torch.Tensor), targets.as_subclass(torch.Tensor))
+            pred_logits = output['pred_logits'].as_subclass(torch.Tensor)  # Ensure PyTorch tensor
+            targets = targets.as_subclass(torch.Tensor)  # Convert targets to PyTorch tensor
+
+            # Ensure `pred_logits` has the correct shape (batch_size, num_classes)
+            pred_logits = pred_logits.view(targets.shape[0], -1)
+
+            # Compute loss
+            loss = criterion(pred_logits, targets)
+
             loss.backward()
             optimizer.step()
         print(f"Epoch {epoch+1}, Loss: {loss.item()}")
