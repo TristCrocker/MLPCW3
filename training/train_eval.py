@@ -8,8 +8,8 @@ def train_model(model, dataloader, epochs=3):
     for epoch in range(epochs):
         for images, targets in dataloader:
             optimizer.zero_grad()
-            output = model(images.float())
-            loss = criterion(torch.as_tensor(output['pred_logits']).float(), torch.as_tensor(targets).long())
+            output = model(images)
+            loss = criterion(torch.as_tensor(output['pred_logits']), torch.as_tensor(targets))
             loss.backward()
             optimizer.step()
         print(f"Epoch {epoch+1}, Loss: {loss.item()}")
