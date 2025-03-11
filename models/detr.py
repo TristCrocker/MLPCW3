@@ -53,5 +53,5 @@ class Detr(nn.Module):
         class_logits = self.class_emb(memory)
         bbox = self.bbox_emb(memory).sigmoid()
 
-        return {'Class (Logits)' : class_logits, 'Bbox' : bbox}
+        return {'pred_logits' : class_logits, 'Bbox' : bbox}
 
