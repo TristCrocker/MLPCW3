@@ -38,7 +38,7 @@ class Detr(nn.Module):
 
         #Trans
         batch_size, seq_len, _ = features.shape  # Extract correct shape
-        query_embeds = self.embeddings.unsqueeze(0).repeat(batch_size, seq_len, 1)
+        query_embeds = self.embeddings[:seq_len].unsqueeze(0).repeat(batch_size, 1, 1)  # ✅ Correct shape
 
 
         print("features shape:", features.shape)  
