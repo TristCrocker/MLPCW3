@@ -37,10 +37,9 @@ class Detr(nn.Module):
         pos_enc = torch.zeros_like(features)
 
         #Trans
-        batch_size = features.shape[1]  # Ensure batch size matches
-        query_embeds = self.embeddings.unsqueeze(0).repeat(batch_size, 1, 1)  # Align batch size
+        query_embeds = self.embeddings.unsqueeze(1).repeat(1, features.shape[1], 1)  # Fix shape mismatch
+        memory = self.transformer(features, query_embeds + pos_enc)
 
-        memory = self.transformer(features, query_embeds + pos_enc)  # Fix shape mismatch
 
 
         #Preds
