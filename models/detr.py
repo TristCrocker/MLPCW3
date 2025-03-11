@@ -30,7 +30,7 @@ class Detr(nn.Module):
         features = self.backbone(images)
 
 
-        features = self.conv1x1(features['layer4'])
+        features = self.conv1x1(features['feature_map'])
         features = features.flatten(2).permute(2, 0, 1)
 
         #Pos Encoding
