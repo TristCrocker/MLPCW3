@@ -12,7 +12,7 @@ class Detr(nn.Module):
         super(Detr, self).__init__()
 
         #Backbone
-        self.backbone = create_feature_extractor(resnet50(weights=ResNet50_Weights.IMAGENET1K_V1), return_nodes={'layer4': 'feature_map'})  # Extract 'layer4')
+        self.backbone = create_feature_extractor(resnet50(weights=ResNet50_Weights.IMAGENET1K_V1), return_nodes={'layer4': 'feature_map'}) 
         self.conv1x1 = nn.Conv2d(2048, hidden_dim, kernel_size=1)
 
         #Transformer
@@ -29,7 +29,6 @@ class Detr(nn.Module):
         #Extract
         features = self.backbone(images)
 
-
         features = self.conv1x1(features['feature_map'])
         features = features.flatten(2).permute(2, 0, 1)
 
@@ -38,16 +37,13 @@ class Detr(nn.Module):
 
         #Trans
         batch_size, seq_len, _ = features.shape  # Extract correct shape
-        query_embeds = self.embeddings[:seq_len].unsqueeze(0).repeat(batch_size, 1, 1)  # ✅ Correct shape
-
+        query_embeds = self.embeddings[:seq_len].unsqueeze(0).repeat(batch_size, 1, 1) 
 
         print("features shape:", features.shape)  
         print("query_embeds shape:", query_embeds.shape)
         print("pos_enc shape:", pos_enc.shape)
 
         memory = self.transformer(features, query_embeds + pos_enc)
-
-
 
         #Preds
         class_logits = self.class_emb(memory)
