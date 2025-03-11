@@ -9,7 +9,7 @@ def train_model(model, dataloader, epochs=3):
         for images, targets in dataloader:
             optimizer.zero_grad()
             output = model(images)
-            loss = criterion(output['pred_logits'].squeeze(), targets)
+            loss = criterion(output['pred_logits'].squeeze().contiguous(), targets.contiguous())
             loss.backward()
             optimizer.step()
         print(f"Epoch {epoch+1}, Loss: {loss.item()}")
