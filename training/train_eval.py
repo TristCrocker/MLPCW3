@@ -8,8 +8,8 @@ def train_model(model, dataloader, epochs=3):
     for epoch in range(epochs):
         for images, targets in dataloader:
             optimizer.zero_grad()
-            output = model(images)
-            loss = criterion(output['pred_logits'].squeeze().contiguous(), targets.contiguous())
+            output = model(images.float())
+            loss = criterion(output['pred_logits'].float(), targets.long())
             loss.backward()
             optimizer.step()
         print(f"Epoch {epoch+1}, Loss: {loss.item()}")
