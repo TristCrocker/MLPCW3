@@ -18,7 +18,7 @@ sudo chmod a+r /usr/local/cuda/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*
 ls /usr/local/cuda*/include/ | grep cudnn
 
 # Set up CUDA
-export CUDA_HOME=/opt/cuda-12.5.0/
+export CUDA_HOME=/opt/cuda-12.1.1/
 export CUDNN_HOME=/usr/local/cuda
 export STUDENT_ID=$(whoami)
 export LD_LIBRARY_PATH=${CUDNN_HOME}/lib64:${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
@@ -53,7 +53,8 @@ mkdir -p ${OUTPUT_DIR}
 
 # Activate the virtual environment
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlpcw3
-conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi
+conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+
 
 # Run the Python script
 cd /home/${STUDENT_ID}/MLPCW3/
