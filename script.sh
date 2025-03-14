@@ -24,6 +24,8 @@ export TMPDIR=/disk/scratch/${STUDENT_ID}/
 export TMP=/disk/scratch/${STUDENT_ID}/
 mkdir -p ${TMP}
 
+module avail cuda
+
 # Ensure datasets exist in scratch storage
 export DATASET_DIR=${TMP}/datasets/
 mkdir -p ${DATASET_DIR}
