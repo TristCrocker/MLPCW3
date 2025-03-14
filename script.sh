@@ -45,7 +45,7 @@ conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi
 
 # Run the Python script
 cd /home/${STUDENT_ID}/MLPCW3/
-python main.py
+python -u main.py
 
 # Save results to home directory
 RESULTS_DIR=/home/${STUDENT_ID}/MLPCW3/results/

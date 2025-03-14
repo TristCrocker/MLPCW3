@@ -16,7 +16,8 @@ def train_model(model, dataloader, epochs=3):
     
     for epoch in range(epochs):
         epoch_loss = 0.0
-        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True)
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True, file=sys.stdout, dynamic_ncols=True, disable=None)
+
         for images, targets in progress_bar:
             optimizer.zero_grad()
             
