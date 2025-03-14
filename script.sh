@@ -8,7 +8,8 @@
 #SBATCH --mem=12000  # Memory in MB
 #SBATCH --time=3-00:00:00
 
-ls -d /opt/cuDNN-*
+ls /usr/local/cuda*/lib64 | grep cudnn
+
 # Set up CUDA
 export CUDA_HOME=/opt/cuda-12.5.0/
 export CUDNN_HOME=/opt/cuDNN-7.0/
