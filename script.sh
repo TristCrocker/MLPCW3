@@ -15,6 +15,7 @@ export LIBRARY_PATH=${CUDNN_HOME}/lib64:$LIBRARY_PATH
 export CPATH=${CUDNN_HOME}/include:$CPATH
 export PATH=${CUDA_HOME}/bin:${PATH}
 export PYTHON_PATH=$PATH
+export CUDA_VISIBLE_DEVICES=0
 
 # Set up scratch storage
 export TMPDIR=/disk/scratch/${STUDENT_ID}/
@@ -37,7 +38,8 @@ mkdir -p ${OUTPUT_DIR}
 
 # Activate the virtual environment
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlpcw3
-conda install -y fastai scikit-learn pandas "numpy>=1.17.3,<1.25.0"
+conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi
+
 
 # Run the Python script
 cd /home/${STUDENT_ID}/MLPCW3/

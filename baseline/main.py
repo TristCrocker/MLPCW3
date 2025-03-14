@@ -1,5 +1,5 @@
 
-from data_preprocessing import get_data
+from data_preprocessing_detr import get_data
 
 # Fast.ai v2 unified imports
 from fastai.vision.all import *

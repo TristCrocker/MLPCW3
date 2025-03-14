@@ -1,13 +1,28 @@
 import torch
+from tqdm import tqdm
 import torch.nn as nn
+import sys
 
 def train_model(model, dataloader, epochs=3):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     criterion = nn.CrossEntropyLoss()
+
+    device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")  
+    model.to(device)
+
+    if len(dataloader) == 0:
+        print("Error: The dataloader is empty. Check your dataset and preprocessing.")
+        return
     
     for epoch in range(epochs):
-        for images, targets in dataloader:
+        epoch_loss = 0.0
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True)
+        for images, targets in progress_bar:
             optimizer.zero_grad()
+            
+            images = images.to(device, dtype=torch.float32)
+            targets = targets.to(device, dtype=torch.long)
+
             output = model(images)
             pred_logits = output['pred_logits'].as_subclass(torch.Tensor)  # Ensure PyTorch tensor
             targets = targets.as_subclass(torch.Tensor)  # Convert targets to PyTorch tensor
@@ -17,16 +32,23 @@ def train_model(model, dataloader, epochs=3):
 
             # Compute loss
             loss = criterion(pred_logits, targets)
+            epoch_loss += loss.item()
 
             loss.backward()
             optimizer.step()
-        print(f"Epoch {epoch+1}, Loss: {loss.item()}")
+
+            progress_bar.set_postfix(loss=loss.item())
+            sys.stdout.flush()
+        print(f"Epoch {epoch+1} completed, Avg Loss: {epoch_loss / len(dataloader):.4f}")
+        sys.stdout.flush()
+
 
 def test_model(model, dataloader):
     correct = 0
     total = 0
     with torch.no_grad():
         for images, targets in dataloader:
+            images = images.to(torch.float32) / 255.0
             output = model(images)
             pred_classes = output['pred_logits'].argmax(dim=-1)  # Get predicted class
             correct += (pred_classes == targets).sum().item()
