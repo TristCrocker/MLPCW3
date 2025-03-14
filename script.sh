@@ -8,7 +8,8 @@
 #SBATCH --mem=12000  # Memory in MB
 #SBATCH --time=3-00:00:00
 
-ls /usr/local/cuda*/lib64 | grep cudnn
+module avail cudnn
+module list
 
 # Set up CUDA
 export CUDA_HOME=/opt/cuda-12.5.0/
