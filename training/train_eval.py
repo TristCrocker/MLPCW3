@@ -16,7 +16,7 @@ def train_model(model, dataloader, epochs=3):
     
     for epoch in range(epochs):
         epoch_loss = 0.0
-        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True, file=sys.stdout, dynamic_ncols=True, disable=None)
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True, file=sys.stdout, dynamic_ncols=True)
 
         for images, targets in progress_bar:
             optimizer.zero_grad()
@@ -38,10 +38,12 @@ def train_model(model, dataloader, epochs=3):
             loss.backward()
             optimizer.step()
 
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+
             progress_bar.set_postfix(loss=loss.item())
             sys.stdout.flush()
-        print(f"Epoch {epoch+1} completed, Avg Loss: {epoch_loss / len(dataloader):.4f}")
-        sys.stdout.flush()
+        print(f"Epoch {epoch+1} completed, Avg Loss: {epoch_loss / len(dataloader):.4f}", flush=True)
 
 def test_model(model, dataloader):
     correct = 0

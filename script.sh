@@ -42,10 +42,9 @@ mkdir -p ${OUTPUT_DIR}
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlpcw3
 conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi
 
-
 # Run the Python script
 cd /home/${STUDENT_ID}/MLPCW3/
-python -u main.py
+stdbuf -oL -eL python -u main.py
 
 # Save results to home directory
 RESULTS_DIR=/home/${STUDENT_ID}/MLPCW3/results/
