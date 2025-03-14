@@ -5,7 +5,7 @@
 #SBATCH --error=job_%j.err   # Unique error log file
 #SBATCH --partition=Teach-Standard
 #SBATCH --gres=gpu:1
-#SBATCH --mem=12000  # Memory in MB
+#SBATCH --mem=120000  # Memory in MB
 #SBATCH --time=3-00:00:00
 
 
@@ -53,7 +53,7 @@ mkdir -p ${OUTPUT_DIR}
 
 # Activate the virtual environment
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlpcw3
-conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia
+conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi pytorch torchvision torchaudio pytorch-cuda=12.1 -c pytorch -c nvidia --verbose
 
 
 # Run the Python script
