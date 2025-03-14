@@ -31,7 +31,7 @@ exclude_list = ['6384c3e78.jpg','13703f040.jpg', '14715c06d.jpg', '33e0ff2d5.jpg
                 'e44dffe88.jpg', 'ef87bad36.jpg', 'f083256d8.jpg']  # corrupted images
 
 sz = 256  # image size
-bs = 64   # batch size
+bs = 8   # batch size
 nw = 4    # number of workers for data loader
 
 
