@@ -14,6 +14,11 @@ def train_model(model, dataloader, epochs=3):
         print("Error: The dataloader is empty. Check your dataset and preprocessing.")
         return
     
+    for batch in dataloader:
+        print(f"Batch received: {type(batch)}, length: {len(batch)}")
+        print(f"First batch shape: {batch[0].shape}")
+        break
+    
     for epoch in range(epochs):
         epoch_loss = 0.0
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True, file=sys.stdout, dynamic_ncols=True)
