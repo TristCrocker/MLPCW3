@@ -8,12 +8,18 @@
 #SBATCH --mem=12000  # Memory in MB
 #SBATCH --time=3-00:00:00
 
-module avail cudnn
-module list
+
+wget https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/cudnn-11.8-linux-x64-v8.4.1.50.tgz
+tar -xzvf cudnn-11.8-linux-x64-v8.4.1.50.tgz
+sudo cp -P cuda/include/cudnn*.h /usr/local/cuda/include/
+sudo cp -P cuda/lib64/libcudnn* /usr/local/cuda/lib64/
+sudo chmod a+r /usr/local/cuda/include/cudnn*.h /usr/local/cuda/lib64/libcudnn*
+
+ls /usr/local/cuda*/include/ | grep cudnn
 
 # Set up CUDA
 export CUDA_HOME=/opt/cuda-12.5.0/
-export CUDNN_HOME=/opt/cuDNN-7.0/
+export CUDNN_HOME=/usr/local/cuda
 export STUDENT_ID=$(whoami)
 export LD_LIBRARY_PATH=${CUDNN_HOME}/lib64:${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
 export LIBRARY_PATH=${CUDNN_HOME}/lib64:$LIBRARY_PATH
