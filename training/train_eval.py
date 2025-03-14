@@ -21,8 +21,8 @@ def train_model(model, dataloader, epochs=3):
         for images, targets in progress_bar:
             optimizer.zero_grad()
             
-            images = images.to(device, dtype=torch.float32)
-            targets = targets.to(device, dtype=torch.long)
+            images = images.to(device, dtype=torch.float32, non_blocking=True)
+            targets = targets.to(device, dtype=torch.long, non_blocking=True)
 
             output = model(images)
             pred_logits = output['pred_logits'].as_subclass(torch.Tensor)  # Ensure PyTorch tensor

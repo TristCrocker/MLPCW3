@@ -111,7 +111,7 @@ def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list):
         batch_tfms=batch_tfms
     )
 
-    dls = dblock.dataloaders(all_items, bs=bs)
+    dls = dblock.dataloaders(all_items, bs=bs, num_workers=4)
 
     global test_names
     test_items = [os.path.join(TEST, f) for f in test_names]
