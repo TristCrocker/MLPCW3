@@ -43,6 +43,10 @@ def train_model(model, dataloader, epochs=3):
             loss = criterion(pred_logits, targets)
             epoch_loss += loss.item()
 
+            loss = criterion(pred_logits, targets)
+            print(f"Loss computed: {loss.item()}")
+            sys.stdout.flush()
+
             loss.backward()
             optimizer.step()
 

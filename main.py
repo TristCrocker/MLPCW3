@@ -40,6 +40,8 @@ dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
 
 #Define model
 model = Detr(num_queries=100)
+print("Starting training...")  # Check if training actually starts
+sys.stdout.flush()
 model.train()
 
 #Train
