@@ -33,6 +33,7 @@ if [ ! -d "${DATASET_DIR}/train_v2" ]; then
     cp -r /home/${STUDENT_ID}/MLPCW3/data/* ${DATASET_DIR}/
 fi
 echo "Dataset is now in ${DATASET_DIR}"
+echo $CUDA_VISIBLE_DEVICES
 
 # Set up output directory
 export OUTPUT_DIR=${TMP}/output/
