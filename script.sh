@@ -1,6 +1,8 @@
 #!/bin/sh
 #SBATCH -N 1       # Number of nodes
 #SBATCH -n 1       # Number of tasks
+#SBATCH --output=job_output.log  # Standard output log file
+#SBATCH --error=job_error.log    # Standard error log file
 #SBATCH --partition=Teach-Standard
 #SBATCH --gres=gpu:1
 #SBATCH --mem=12000  # Memory in MB

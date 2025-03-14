@@ -7,7 +7,7 @@ def train_model(model, dataloader, epochs=3):
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     criterion = nn.CrossEntropyLoss()
 
-    device = torch.device("mps") if torch.backends.mps.is_available() else torch.device("cpu")  
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")  # Ensure CUDA is used on the cluster
     model.to(device)
 
     if len(dataloader) == 0:
@@ -41,7 +41,6 @@ def train_model(model, dataloader, epochs=3):
             sys.stdout.flush()
         print(f"Epoch {epoch+1} completed, Avg Loss: {epoch_loss / len(dataloader):.4f}")
         sys.stdout.flush()
-
 
 def test_model(model, dataloader):
     correct = 0
