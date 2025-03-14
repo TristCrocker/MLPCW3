@@ -10,6 +10,12 @@ from sklearn.model_selection import train_test_split
 from models.detr import Detr
 from training.train_eval import *
 
+if torch.cuda.is_available():
+    print(f"GPU detected: {torch.cuda.get_device_name(0)}")
+    print(f"CUDA version: {torch.version.cuda}")
+else:
+    print("No GPU detected. Running on CPU!")
+
 # Set paths and parameters
 DATASET_DIR = os.getenv("DATASET_DIR", "data")  # Default to "data" if not set
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  # Default to "output" if not set
