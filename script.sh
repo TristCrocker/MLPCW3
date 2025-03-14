@@ -8,23 +8,28 @@
 #SBATCH --mem=12000  # Memory in MB
 #SBATCH --time=3-00:00:00
 
-# Set up CUDA
-export CUDA_HOME=/opt/cuda-9.0.176.1/
-export CUDNN_HOME=/opt/cuDNN-7.0/
-export STUDENT_ID=$(whoami)
-export LD_LIBRARY_PATH=${CUDNN_HOME}/lib64:${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
-export LIBRARY_PATH=${CUDNN_HOME}/lib64:$LIBRARY_PATH
-export CPATH=${CUDNN_HOME}/include:$CPATH
-export PATH=${CUDA_HOME}/bin:${PATH}
-export PYTHON_PATH=$PATH
-export CUDA_VISIBLE_DEVICES=0
+# Load the latest CUDA version dynamically
+module purge  # Clears any previously loaded modules
+module load cuda  # Loads the highest available CUDA version
+
+# Verify CUDA version
+nvcc --version
+nvidia-smi
+
+# Set CUDA environment variables dynamically
+export CUDA_HOME=$(dirname $(dirname $(which nvcc)))  # Auto-detect CUDA path
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
+export PATH=$CUDA_HOME/bin:$PATH
+export CUDA_VISIBLE_DEVICES=0  # Use the assigned GPU
+
+# Debugging: Print CUDA location
+echo "Using CUDA from: $CUDA_HOME"
 
 # Set up scratch storage
+export STUDENT_ID=$(whoami)
 export TMPDIR=/disk/scratch/${STUDENT_ID}/
 export TMP=/disk/scratch/${STUDENT_ID}/
 mkdir -p ${TMP}
-
-module avail cuda
 
 # Ensure datasets exist in scratch storage
 export DATASET_DIR=${TMP}/datasets/
@@ -35,7 +40,7 @@ if [ ! -d "${DATASET_DIR}/train_v2" ]; then
     cp -r /home/${STUDENT_ID}/MLPCW3/data/* ${DATASET_DIR}/
 fi
 echo "Dataset is now in ${DATASET_DIR}"
-echo $CUDA_VISIBLE_DEVICES
+echo "CUDA_VISIBLE_DEVICES: $CUDA_VISIBLE_DEVICES"
 
 # Set up output directory
 export OUTPUT_DIR=${TMP}/output/
