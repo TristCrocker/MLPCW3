@@ -4,6 +4,10 @@ import torch.nn as nn
 import sys
 
 def train_model(model, dataloader, epochs=3):
+
+    torch.cuda.empty_cache()  # Frees unused memory
+    torch.cuda.memory_summary(device=None, abbreviated=False)  # Shows memory usage
+    
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
     criterion = nn.CrossEntropyLoss()
 
