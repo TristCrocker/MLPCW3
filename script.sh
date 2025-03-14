@@ -10,7 +10,7 @@
 
 ls -d /opt/cuda-* 2>/dev/null
 # Set up CUDA
-export CUDA_HOME=/opt/cuda-9.0.176.1/
+export CUDA_HOME=/opt/cuda-12.5.0/
 export CUDNN_HOME=/opt/cuDNN-7.0/
 export STUDENT_ID=$(whoami)
 export LD_LIBRARY_PATH=${CUDNN_HOME}/lib64:${CUDA_HOME}/lib64:$LD_LIBRARY_PATH
