@@ -9,7 +9,7 @@
 #SBATCH --time=3-00:00:00
 
 
-wget --verbose https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/cudnn-11.8-linux-x64-v8.4.1.50.tgz
+curl -L --progress-bar -o https://developer.download.nvidia.com/compute/redist/cudnn/v8.4.1/cudnn-11.8-linux-x64-v8.4.1.50.tgz
 tar -xzvf cudnn-11.8-linux-x64-v8.4.1.50.tgz
 sudo cp -P cuda/include/cudnn*.h /usr/local/cuda/include/
 sudo cp -P cuda/lib64/libcudnn* /usr/local/cuda/lib64/
