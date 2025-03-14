@@ -32,23 +32,26 @@ def train_model(model, dataloader, epochs=3):
             images = images.to(device, dtype=torch.float32, non_blocking=True)
             targets = targets.to(device, dtype=torch.long, non_blocking=True)
 
-            output = model(images)
-            pred_logits = output['pred_logits'].as_subclass(torch.Tensor)  # Ensure PyTorch tensor
-            targets = targets.as_subclass(torch.Tensor)  # Convert targets to PyTorch tensor
+            try:
+                output = model(images)
+                pred_logits = output['pred_logits'].as_subclass(torch.Tensor)  # Ensure PyTorch tensor
+                targets = targets.as_subclass(torch.Tensor)  # Convert targets to PyTorch tensor
 
-            # Ensure `pred_logits` has the correct shape (batch_size, num_classes)
-            pred_logits = pred_logits.view(targets.shape[0], -1)
+                # Ensure `pred_logits` has the correct shape (batch_size, num_classes)
+                pred_logits = pred_logits.view(targets.shape[0], -1)
 
-            # Compute loss
-            loss = criterion(pred_logits, targets)
-            epoch_loss += loss.item()
+                # Compute loss
+                loss = criterion(pred_logits, targets)
+                epoch_loss += loss.item()
 
-            loss = criterion(pred_logits, targets)
-            print(f"Loss computed: {loss.item()}")
-            sys.stdout.flush()
 
-            loss.backward()
-            optimizer.step()
+                loss.backward()
+                optimizer.step()
+
+            except RuntimeError as e:
+                print(f"CUDA error: {e}")
+                torch.cuda.empty_cache()
+                sys.stdout.flush()
 
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
