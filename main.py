@@ -16,6 +16,7 @@ if torch.cuda.is_available():
 else:
     print("No GPU detected. Running on CPU!")
 
+
 # Set paths and parameters
 DATASET_DIR = os.getenv("DATASET_DIR", "data")  # Default to "data" if not set
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  # Default to "output" if not set
@@ -33,7 +34,6 @@ exclude_list = ['6384c3e78.jpg','13703f040.jpg', '14715c06d.jpg', '33e0ff2d5.jpg
 sz = 256  # image size
 bs = 32  # batch size
 nw = 4    # number of workers for data loader
-
 
 # Get DataLoaders and test DataLoader using the new get_data function
 dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
