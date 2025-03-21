@@ -87,19 +87,18 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
         image_tensor = images_tensor[i]  # Select an image
         image = image_tensor.permute(1, 2, 0).cpu().numpy()  # Convert to (H, W, 3)
         image_size = image.shape[0]
-        print(image_size)
         # Get bounding boxes for the image
-        bboxes = bboxes_tensor[i].cpu()  # Convert from normalized to pixel coordinates
+        bboxes = bboxes_tensor[i].cpu() # Convert from normalized to pixel coordinates
 
         # Convert to (xmin, ymin, width, height) format for visualization
         # bboxes = [(float(cx - w / 2), float(cy - h / 2), float(w), float(h)) for cx, cy, w, h in bboxes if w > 0 and h > 0]
         
         corrected_bboxes = [
             (
-                float((cx * image_size) - (w * image_size) / 2),  # xmin
-                float((cy * image_size) - (h * image_size) / 2),  # ymin
-                float(w * image_size),  # width
-                float(h * image_size),  # height
+                torch.round(cx * image_size - (w * image_size) / 2),  # Correctly scale cx
+                torch.round(cy * image_size - (h * image_size) / 2),  # Correctly scale cy
+                torch.round(w * image_size),  # width
+                torch.round(h * image_size),  # height
             )
             for cx, cy, w, h in bboxes if w > 0 and h > 0
         ]
@@ -111,8 +110,8 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
         # Plot the image
         # ax.imshow(image, extent=[0, image_size, image_size, 0])  # Force image to fill the correct area
         ax.imshow(image)
-        # ax.set_xlim(0, image_size)
-        # ax.set_ylim(image_size, 0) 
+        ax.set_xlim(0, image_size)
+        ax.set_ylim(image_size, 0)
         ax.set_aspect("auto")
         ax.set_title(f"Sample {i+1}")
         ax.axis("off")

@@ -5,6 +5,7 @@ from sklearn.model_selection import train_test_split
 import torch
 from fastai.vision.all import *
 from torchvision.transforms.functional import resize
+import torchvision
 
 def train_set_split(PATH, TRAIN, TEST, SEGMENTATION, exclude_list):
     """
@@ -34,6 +35,8 @@ def rle_to_mask(rle, height=768, width=768):
 
     rle = list(map(int, rle.split()))
     starts, lengths = rle[0::2], rle[1::2]
+
+
     for start, length in zip(starts, lengths):
         mask[start: start + length] = 1
 
@@ -54,10 +57,12 @@ def mask_to_bbox(mask, height=256, width=256):
 
     w = xmax - xmin + 1
     h = ymax - ymin + 1
-    cx = xmin + w / 2
-    cy = ymin + h / 2
+    cx = (xmin + xmax) / 2  # Center X
+    cy = (ymin + ymax) / 2  # Center Y
 
-    return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32)
+    return torch.tensor([cy / height, cx / width, h / height, w / width], dtype=torch.float32)
+
+    # return torch.tensor([cy / height, cx / width, w / width, h / height], dtype=torch.float32)
 
 
 def label_func(fname, seg_df, height=256, width=256, num_queries=10):
@@ -89,7 +94,7 @@ def label_func(fname, seg_df, height=256, width=256, num_queries=10):
         
         full_mask_tensor = torch.tensor(full_mask).unsqueeze(0).float() 
 
-        resized_mask = resize(full_mask_tensor, size=(height, width)).squeeze(0).byte()  # shape: (height, width)
+        resized_mask = resize(full_mask_tensor, size=(height, width), interpolation=torchvision.transforms.InterpolationMode.NEAREST).squeeze(0).byte()  # shape: (height, width)
 
         bbox = mask_to_bbox(resized_mask.numpy(), height, width)
 
@@ -165,6 +170,8 @@ def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list, num_queries=
             max_rotate=0,
             max_lighting=0.05
         )
+
+
     )
 
     dls = dblock.dataloaders(all_items, bs=bs, num_workers=4)

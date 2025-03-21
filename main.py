@@ -42,15 +42,15 @@ dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
 #Define model
 # model = Detr()
 # print("Starting training...")  # Check if training actually starts
-sys.stdout.flush()
+# sys.stdout.flush()
 # model.train()
 
 # Train
 # train_model(model, dls.train)
-visualisations.visualize_batch(dls, OUTPUT_DIR, 10, 10)
+visualisations.visualize_batch(dls, OUTPUT_DIR, 30, 10)
 
 #Save Model
-# model_path = os.path.join(OUTPUT_DIR, "detr_model_new.pth")
+# model_path = os.path.join(OUTPUT_DIR, "detr_model_boxes.pth")
 # torch.save(model.state_dict(), model_path)
 # print(f"Model saved to {model_path}")
 # model.load_state_dict(torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")), strict=False)
