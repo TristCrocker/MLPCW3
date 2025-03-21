@@ -52,8 +52,8 @@ def mask_to_bbox(mask, height=256, width=256):
         return None  # No ship found
 
     # Convert mask pixels to bounding box corners (in pixels)
-    xmin, xmax = x_indices.min(), x_indices.max()
-    ymin, ymax = y_indices.min(), y_indices.max()
+    xmin, xmax = x_indices.min(), x_indices.max() + 1
+    ymin, ymax = y_indices.min(), y_indices.max() + 1
 
     w = xmax - xmin + 1
     h = ymax - ymin + 1

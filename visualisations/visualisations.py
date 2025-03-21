@@ -95,10 +95,10 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
         
         corrected_bboxes = [
             (
-                torch.round(cx * image_size - (w * image_size) / 2),  # Correctly scale cx
-                torch.round(cy * image_size - (h * image_size) / 2),  # Correctly scale cy
-                torch.round(w * image_size),  # width
-                torch.round(h * image_size),  # height
+                torch.round(cx * image_size - (w * image_size) / 2).item(),  # Correctly scale cx
+                torch.round(cy * image_size - (h * image_size) / 2).item(),  # Correctly scale cy
+                torch.round(w * image_size).item(),  # width
+                torch.round(h * image_size).item(),  # height
             )
             for cx, cy, w, h in bboxes if w > 0 and h > 0
         ]
