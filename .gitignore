@@ -1,3 +1,7 @@
 env/
 data/
 output/
+*.out
+*.log
+*.err
+results/

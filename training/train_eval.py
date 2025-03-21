@@ -2,14 +2,17 @@ import torch
 from tqdm import tqdm
 import torch.nn as nn
 import sys
+from visualisations import visualisations
+import os
 
-def train_model(model, dataloader, epochs=3):
+def train_model(model, dataloader, epochs=1):
 
     torch.cuda.empty_cache()  # Frees unused memory
     torch.cuda.memory_summary(device=None, abbreviated=False)  # Shows memory usage
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    criterion = nn.CrossEntropyLoss()
+    criterion_cls = nn.CrossEntropyLoss(ignore_index=0)
+    criterion_box = nn.L1Loss()
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")  # Ensure CUDA is used on the cluster
     model.to(device)
@@ -29,30 +32,37 @@ def train_model(model, dataloader, epochs=3):
         print(f"Using device: {torch.cuda.get_device_name(0)}" if torch.cuda.is_available() else "Using CPU", flush=True)
 
 
-        for images, targets in progress_bar:
+        for images, (target_boxes, target_labels) in progress_bar:
             
             optimizer.zero_grad()
             
             images = images.to(device, dtype=torch.float32, non_blocking=True)
-            targets = targets.to(device, dtype=torch.long, non_blocking=True)
+            target_boxes = target_boxes.to(device, dtype=torch.float32, non_blocking=True)
+            target_labels = target_labels.to(device, dtype=torch.long, non_blocking=True)
+
+
+            loss = None
 
             try:
                 output = model(images)
-                pred_logits = output['pred_logits'].as_subclass(torch.Tensor)  # Ensure PyTorch tensor
-                targets = targets.as_subclass(torch.Tensor)  # Convert targets to PyTorch tensor
+                pred_logits = output['pred_logits']  # Shape: (batch, num_queries, num_classes+1)
+                pred_boxes = output['pred_boxes']  # Shape: (batch, num_queries, 4)
 
-                # Ensure `pred_logits` has the correct shape (batch_size, num_classes)
-                pred_logits = pred_logits.view(targets.shape[0], -1)
+                # Extract target labels and bounding boxes
+                loss_cls = criterion_cls(pred_logits.view(-1, pred_logits.shape[-1]), target_labels.view(-1))
+                loss_box = criterion_box(pred_boxes, target_boxes)
 
-                # Compute loss
-                loss = criterion(pred_logits, targets)
+                # Total Loss
+                loss = loss_cls + loss_box
                 epoch_loss += loss.item()
-
 
                 loss.backward()
                 optimizer.step()
+                progress_bar.set_postfix(loss=loss.item())
+                sys.stdout.flush()
 
             except RuntimeError as e:
+
                 print(f"CUDA error: {e}")
                 torch.cuda.empty_cache()
                 sys.stdout.flush()
@@ -60,39 +70,44 @@ def train_model(model, dataloader, epochs=3):
             if torch.cuda.is_available():
                 torch.cuda.synchronize()
 
-            progress_bar.set_postfix(loss=loss.item())
-            sys.stdout.flush()
+            
+            
         print(f"Epoch {epoch+1} completed, Avg Loss: {epoch_loss / len(dataloader):.4f}", flush=True)
         sys.stdout.flush()
 
-def test_model(model, dataloader):
+def test_model(model, dataloader, n):
     """
     Evaluates the model on the test set using GPU.
     """
+    torch.cuda.empty_cache()  # Frees unused memory
+    torch.cuda.memory_summary(device=None, abbreviated=False)  # Shows memory usage
+
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     model.to(device)
     model.eval()  # Set model to evaluation mode
 
-    correct = 0
-    total = 0
-
-    torch.cuda.empty_cache()  # Free unused GPU memory
-
-    progress_bar = tqdm(dataloader, desc="Testing", leave=True, file=sys.stdout, dynamic_ncols=True)
-    print(f"Using device: {torch.cuda.get_device_name(0)}" if torch.cuda.is_available() else "Using CPU", flush=True)
-
     with torch.no_grad():  # Disable gradient tracking for inference
-        for images, targets in progress_bar:
+        for index, batch in enumerate(tqdm(dataloader, desc="Testing", leave=True)):
+            
+            if index >= n:
+                break 
+
+            # Unpack batch correctly
+            if isinstance(batch, tuple):  
+                images = batch[0]  # Extract images
+            else:
+                images = batch  # If batch is just images, use it directly
+
             images = images.to(device, dtype=torch.float32, non_blocking=True)
-            targets = targets.to(device, dtype=torch.long, non_blocking=True)
 
             try:
                 output = model(images)
-                pred_logits = output['pred_logits'].as_subclass(torch.Tensor)  # Ensure PyTorch tensor
-                pred_classes = pred_logits.argmax(dim=-1)  # Get predicted class
+                pred_logits = output['pred_logits'].softmax(-1)[0, :, :-1]   # Ensure PyTorch tensor
+                pred_boxes = output["pred_boxes"]  # Get predicted class
+                OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  # Default to "output" if not set
+                plot_path = os.path.join(OUTPUT_DIR, "bbox_plot_" + str(index) + ".png")
 
-                correct += (pred_classes == targets).sum().item()
-                total += targets.numel()
+                visualisations.vis_bounding_boxes(images.cpu().numpy(), pred_logits.cpu().numpy(), pred_boxes.cpu().numpy(), plot_path)
 
             except RuntimeError as e:
                 print(f"CUDA error: {e}")
@@ -102,10 +117,4 @@ def test_model(model, dataloader):
             if torch.cuda.is_available():
                 torch.cuda.synchronize()  # Ensure GPU operations complete before moving forward
 
-            progress_bar.set_postfix(accuracy=f"{(correct / total) * 100:.2f}%" if total > 0 else "N/A")
             sys.stdout.flush()
-
-    accuracy = correct / total if total > 0 else 0
-    print(f"Test Accuracy: {accuracy * 100:.2f}%")
-    sys.stdout.flush()
-    return accuracy

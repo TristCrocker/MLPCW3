@@ -1,5 +1,6 @@
 
 from data_preprocessing_detr import get_data
+from visualisations import visualisations
 
 # Fast.ai v2 unified imports
 from fastai.vision.all import *
@@ -39,19 +40,29 @@ nw = 4    # number of workers for data loader
 dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
 
 #Define model
-model = Detr(num_queries=100)
-print("Starting training...")  # Check if training actually starts
+# model = Detr()
+# print("Starting training...")  # Check if training actually starts
 sys.stdout.flush()
-model.train()
+# model.train()
 
-#Train
-train_model(model, dls.train)
+# Train
+# train_model(model, dls.train)
+visualisations.visualize_batch(dls, OUTPUT_DIR, 10, 10)
 
 #Save Model
-model_path = os.path.join(OUTPUT_DIR, "detr_model.pth")
-torch.save(model.state_dict(), model_path)
-print(f"Model saved to {model_path}")
+# model_path = os.path.join(OUTPUT_DIR, "detr_model_new.pth")
+# torch.save(model.state_dict(), model_path)
+# print(f"Model saved to {model_path}")
+# model.load_state_dict(torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu")), strict=False)
+
+# Move the model to the appropriate device
+# device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+# model.to(device)
+
+# Ensure the model is in evaluation mode
+# model.eval()
 
 #Test
-acc_test = test_model(model, test_dl)
+
+# acc_test = test_model(model, test_dl, 10)
 

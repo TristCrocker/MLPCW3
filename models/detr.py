@@ -8,42 +8,61 @@ from torchvision.models.feature_extraction import create_feature_extractor
 
 
 class Detr(nn.Module):
-    def __init__(self, num_queries, hidden_dim=256, num_heads=8, num_encoder_layers=6, num_decoder_layers=6):
+    def __init__(self, num_classes=1, hidden_dim=256, num_queries=10, num_heads=8, num_encoder_layers=6, num_decoder_layers=6):
         super(Detr, self).__init__()
 
         #Backbone
-        self.backbone = create_feature_extractor(resnet50(weights=ResNet50_Weights.IMAGENET1K_V1), return_nodes={'layer4': 'feature_map'}) 
+        self.backbone = resnet50()
+        del self.backbone.fc
+        
         self.conv1x1 = nn.Conv2d(2048, hidden_dim, kernel_size=1)
 
         #Transformer
-        self.transformer = nn.Transformer(d_model=hidden_dim, nhead=num_heads, num_encoder_layers=num_encoder_layers, num_decoder_layers=num_decoder_layers, batch_first=True)
+        self.transformer = nn.Transformer(d_model=hidden_dim, nhead=num_heads, num_encoder_layers=num_encoder_layers, num_decoder_layers=num_decoder_layers)
+        
+        self.class_head = nn.Linear(hidden_dim, num_classes + 1)
+        self.bbox_head = nn.Linear(hidden_dim, 4)
 
         #Embeddings
-        self.embeddings = nn.Parameter(torch.rand(num_queries, hidden_dim))
+        self.query_pos = nn.Parameter(torch.rand(num_queries, hidden_dim))
 
         #Bounding Box & Class Prediction
-        self.class_emb = nn.Linear(hidden_dim, 2)  # 2 classes, boat and background
-        self.bbox_emb = nn.Linear(hidden_dim, 4)  # (cx, cy, w, h)
+        self.row_embed = nn.Parameter(torch.rand(50, hidden_dim // 2))  # Row-based encoding
+        self.col_embed = nn.Parameter(torch.rand(50, hidden_dim // 2))
 
     def forward(self, images):
         #Extract
-        features = self.backbone(images)
+        x = self.backbone.conv1(images)
+        x = self.backbone.bn1(x)
+        x = self.backbone.relu(x)
+        x = self.backbone.maxpool(x)
 
-        features = self.conv1x1(features['feature_map'])
-        features = features.flatten(2).permute(2, 0, 1)
+        x = self.backbone.layer1(x)
+        x = self.backbone.layer2(x)
+        x = self.backbone.layer3(x)
+        x = self.backbone.layer4(x)
+        h = self.conv1x1(x)
 
-        #Pos Encoding
-        pos_enc = torch.zeros_like(features)
+        H, W = h.shape[-2:]  # Get height & width of feature map
+        pos_enc = torch.cat([
+            self.col_embed[:W].unsqueeze(0).repeat(H, 1, 1),
+            self.row_embed[:H].unsqueeze(1).repeat(1, W, 1),
+        ], dim=-1).flatten(0, 1).unsqueeze(1)  # Shape: (H*W, 1, hidden_dim)
 
-        #Trans
-        batch_size, seq_len, _ = features.shape  # Extract correct shape
-        query_embeds = self.embeddings[:seq_len].unsqueeze(0).repeat(batch_size, 1, 1) 
+        h = h.flatten(2).permute(2, 0, 1)  # Shape: (H*W, batch, hidden_dim)
 
-        memory = self.transformer(features, query_embeds + pos_enc)
+        batch_size = images.shape[0]  # Get batch size
 
-        #Preds
-        class_logits = self.class_emb(memory)
-        bbox = self.bbox_emb(memory).sigmoid()
+        # Ensure query embeddings match batch size
+        query_pos = self.query_pos.unsqueeze(0).repeat(batch_size, 1, 1)
 
-        return {'pred_logits' : class_logits, 'Bbox' : bbox}
+        h = self.transformer(
+            pos_enc + 0.1 * h,  # Spatial Encoding + Image Features
+            query_pos.transpose(0, 1)  # Object Queries
+        ).transpose(0, 1)  # Shape: (batch, num_queries, hidden_dim)
+
+        pred_logits = self.class_head(h)  # Class predictions
+        pred_boxes = self.bbox_head(h).sigmoid()  # Bounding boxes (normalized)
+
+        return {'pred_logits' : pred_logits, 'pred_boxes' : pred_boxes}
 

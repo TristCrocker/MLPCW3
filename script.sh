@@ -20,8 +20,8 @@ export PYTHON_PATH=$PATH
 export CUDA_VISIBLE_DEVICES=0
 
 # Set up scratch storage
-export TMPDIR=/disk/scratch/${STUDENT_ID}/
-export TMP=/disk/scratch/${STUDENT_ID}/
+export TMPDIR=/disk/scratch/${STUDENT_ID}
+export TMP=/disk/scratch/${STUDENT_ID}
 mkdir -p ${TMP}
 
 
@@ -31,7 +31,7 @@ mkdir -p ${DATASET_DIR}
 
 if [ ! -d "${DATASET_DIR}/train_v2" ]; then
     echo "Copying dataset to scratch space..."
-    cp -r /home/${STUDENT_ID}/MLPCW3/data/* ${DATASET_DIR}/
+    cp -ru /home/${STUDENT_ID}/MLPCW3/data/* ${DATASET_DIR}/
 fi
 echo "Dataset is now in ${DATASET_DIR}"
 echo $CUDA_VISIBLE_DEVICES
@@ -40,6 +40,12 @@ echo $CUDA_VISIBLE_DEVICES
 export OUTPUT_DIR=${TMP}/output/
 mkdir -p ${OUTPUT_DIR}
 
+if [ -f "/home/${STUDENT_ID}/MLPCW3/results/detr_model.pth" ]; then
+    cp /home/${STUDENT_ID}/MLPCW3/results/detr_model.pth ${OUTPUT_DIR}/
+    echo "Model copied to scratch space."
+else
+    echo "Warning: Model file not found in home directory. Training a new model."
+fi
 
 
 # Activate the virtual environment
