@@ -4,24 +4,6 @@ import torch
 import matplotlib.patches as patches
 import os
 
-def box_cxcywh_to_xyxy(x):
-    """
-    Convert bounding boxes from center-based format (cx, cy, w, h) 
-    to (xmin, ymin, xmax, ymax).
-    """
-    x_c, y_c, w, h = x.unbind(1)
-    b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
-         (x_c + 0.5 * w), (y_c + 0.5 * h)]
-    return torch.stack(b, dim=1)
-
-def rescale_bboxes(out_bbox, size):
-    """
-    Rescale bounding boxes from [0,1] range to actual image size.
-    """
-    img_w, img_h = size
-    b = box_cxcywh_to_xyxy(out_bbox)
-    b = b * torch.tensor([img_w, img_h, img_w, img_h], dtype=torch.float32)
-    return b
 
 def vis_bounding_boxes(images, pred_logits, pred_boxes, path):
     
@@ -69,9 +51,7 @@ def vis_bounding_boxes(images, pred_logits, pred_boxes, path):
 
 
 def visualize_batch(dls, path, num_images=4, num_queries=10):
-    """
-    Visualizes multiple images from the DataLoader (`dls`) with their bounding boxes.
-    """
+
     # Get a batch of images and labels
     batch = dls.one_batch()
     print(type(batch))  # Should be a tuple or list

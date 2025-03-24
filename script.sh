@@ -40,18 +40,16 @@ echo $CUDA_VISIBLE_DEVICES
 export OUTPUT_DIR=${TMP}/output/
 mkdir -p ${OUTPUT_DIR}
 
-if [ -f "/home/${STUDENT_ID}/MLPCW3/results/detr_model.pth" ]; then
-    cp /home/${STUDENT_ID}/MLPCW3/results/detr_model.pth ${OUTPUT_DIR}/
+if [ -f "/home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_thresh.pth" ]; then
+    cp /home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_thresh.pth ${OUTPUT_DIR}/
     echo "Model copied to scratch space."
 else
     echo "Warning: Model file not found in home directory. Training a new model."
 fi
 
-
 # Activate the virtual environment
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlpcw3
 conda install -y fastai scikit-learn pandas "numpy==1.23.5" tqdm certifi pytorch torchvision torchaudio -c pytorch --verbose
-
 
 
 # Run the Python script

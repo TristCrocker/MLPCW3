@@ -36,16 +36,12 @@ def rle_to_mask(rle, height=768, width=768):
     rle = list(map(int, rle.split()))
     starts, lengths = rle[0::2], rle[1::2]
 
-
     for start, length in zip(starts, lengths):
         mask[start: start + length] = 1
 
     return mask.reshape((height, width))
 
 def mask_to_bbox(mask, height=256, width=256):
-    """
-    Convert a binary mask to a bounding box (cx, cy, w, h) in normalized coordinates.
-    """
     y_indices, x_indices = np.where(mask == 1)
 
     if len(y_indices) == 0 or len(x_indices) == 0:
@@ -60,16 +56,13 @@ def mask_to_bbox(mask, height=256, width=256):
     cx = (xmin + xmax) / 2  # Center X
     cy = (ymin + ymax) / 2  # Center Y
 
-    return torch.tensor([cy / height, cx / width, h / height, w / width], dtype=torch.float32)
+    return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32)
 
     # return torch.tensor([cy / height, cx / width, w / width, h / height], dtype=torch.float32)
 
 
-def label_func(fname, seg_df, height=256, width=256, num_queries=10):
-    """
-    Extract bounding boxes from segmentation data.
-    Pads bounding boxes to `num_queries` for DETR.
-    """
+def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10):
+
     if fname not in seg_df.index:
         return torch.zeros((num_queries, 4)), torch.zeros(num_queries, dtype=torch.long)
 
@@ -99,7 +92,8 @@ def label_func(fname, seg_df, height=256, width=256, num_queries=10):
         bbox = mask_to_bbox(resized_mask.numpy(), height, width)
 
         if bbox is not None:
-            bboxes.append(bbox)
+            if bbox[2] > min_size / width and bbox[3] > min_size / height:
+                bboxes.append(bbox)
 
     # If no valid bounding boxes were found
     if len(bboxes) == 0:
