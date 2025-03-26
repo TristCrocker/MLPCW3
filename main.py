@@ -46,13 +46,13 @@ model = Detr()
 # model.train()
 
 # Train
-# train_model(model, dls.train)
+# model = train_model_pretrained(dls.train)
 # visualisations.visualize_batch(dls, OUTPUT_DIR, 30, 10)
 
 #Save Model
 # Last one was bbox
 print("STARTING")
-model_path = os.path.join(OUTPUT_DIR, "detr_model_bbox_thresh.pth")
+model_path = os.path.join(OUTPUT_DIR, "detr_model_bbox_correct_loss.pth")
 # torch.save(model.state_dict(), model_path)
 # print(f"Model saved to {model_path}")
 model.load_state_dict(torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"), weights_only=True), strict=False)
@@ -66,5 +66,5 @@ model.eval()
 
 #Test
 
-acc_test = test_model(model, dls.train, 30, OUTPUT_DIR)
+acc_test = test_model(model, dls.train, 100, OUTPUT_DIR)
 

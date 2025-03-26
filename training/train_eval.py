@@ -7,10 +7,12 @@ import os
 import matplotlib.patches as patches
 import matplotlib.pyplot as plt
 import numpy as np
-from utils import *
+from training.utils import *
+from transformers import DetrForObjectDetection, DetrFeatureExtractor
 
 
-def train_model(model, dataloader, epochs=1):
+
+def train_model(model, dataloader, epochs=10):
 
     torch.cuda.empty_cache() 
     torch.cuda.memory_summary(device=None, abbreviated=False)  
@@ -56,7 +58,8 @@ def train_model(model, dataloader, epochs=1):
                 batch_targets.append({"labels": labels, "boxes": boxes})
 
             output = model(images)
-            loss, loss_dict = criterion(output, batch_targets)
+            loss_dict = criterion(output, batch_targets)
+            loss = sum(loss_dict[k] * criterion.weight_dict[k] for k in loss_dict if k in criterion.weight_dict)
 
             loss.backward()
             optimizer.step()
@@ -69,6 +72,72 @@ def train_model(model, dataloader, epochs=1):
 
         print(f"Epoch {epoch+1} completed, Avg Loss: {epoch_loss / len(dataloader):.4f}", flush=True)
         sys.stdout.flush()
+
+
+def train_model_pretrained(dataloader, epochs=1):
+    DATASET_DIR = os.getenv("DATASET_DIR", "data")  
+    
+    model_path = os.path.join(DATASET_DIR, "pretrained_model")
+    print("Model path:", model_path)
+    print("Contents:", os.listdir(model_path))
+    processor = DetrFeatureExtractor.from_pretrained(model_path)
+    model = DetrForObjectDetection.from_pretrained(model_path)
+
+    torch.cuda.empty_cache() 
+    torch.cuda.memory_summary(device=None, abbreviated=False)  
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
+
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")  
+    model.to(device)
+    model.train()
+
+    for epoch in range(epochs):
+        epoch_loss = 0.0
+        progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True, file=sys.stdout, dynamic_ncols=True)
+        print(f"Using device: {torch.cuda.get_device_name(0)}" if torch.cuda.is_available() else "Using CPU", flush=True)
+
+        for images, (target_boxes, target_labels) in progress_bar:
+            
+            optimizer.zero_grad()
+            images = [image.cpu() for image in images]
+            inputs = processor(images=images, return_tensors="pt", padding=True).to(device)
+
+            target_boxes = target_boxes.to(device, dtype=torch.float32, non_blocking=True)
+            target_labels = target_labels.to(device, dtype=torch.long, non_blocking=True)
+
+            batch_targets = []
+            for i in range(len(images)):
+                labels = target_labels[i]
+                boxes = target_boxes[i]
+                keep = labels == 1
+                boxes = boxes[keep]
+                labels = labels[keep]
+
+                cx, cy, w, h = boxes.unbind(-1)
+                x1 = cx - 0.5 * w
+                y1 = cy - 0.5 * h
+                x2 = cx + 0.5 * w
+                y2 = cy + 0.5 * h
+                boxes_xyxy = torch.stack([x1, y1, x2, y2], dim=-1)
+                boxes_xyxy[:, [0, 2]] /= images[i].shape[-1]
+                boxes_xyxy[:, [1, 3]] /= images[i].shape[-2]
+                batch_targets.append({"class_labels": labels, "boxes": boxes_xyxy})
+
+            outputs = model(**inputs, labels=batch_targets)
+            loss = outputs.loss
+
+            loss.backward()
+            optimizer.step()
+            epoch_loss += loss.item()
+            progress_bar.set_postfix(loss=loss.item())
+            sys.stdout.flush()
+
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+
+        print(f"Epoch {epoch+1} completed, Avg Loss: {epoch_loss / len(dataloader):.4f}", flush=True)
+        sys.stdout.flush()
+    return model
 
 def box_cxcywh_to_xywh(boxes, img_size):
     img_h, img_w = img_size

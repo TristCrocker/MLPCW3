@@ -3,6 +3,8 @@ from scipy.optimize import linear_sum_assignment
 from torch import nn
 from torchvision.ops import generalized_box_iou
 from torchvision.ops.boxes import box_area
+import torch.distributed as dist
+import torch.nn.functional as F
 ###### This file contains util such as hungarian matcher, SetCriterion and some utils for conversion straight from the facebook DETR repo (https://github.com/facebookresearch/detr)
 
 ##### Straight from https://github.com/facebookresearch/detr/blob/main/models/matcher.py
@@ -155,40 +157,41 @@ class SetCriterion(nn.Module):
         losses = {}
         losses['loss_bbox'] = loss_bbox.sum() / num_boxes
 
-        loss_giou = 1 - torch.diag(box_ops.generalized_box_iou(
-            box_ops.box_cxcywh_to_xyxy(src_boxes),
-            box_ops.box_cxcywh_to_xyxy(target_boxes)))
+        loss_giou = 1 - torch.diag(generalized_box_iou(
+            box_cxcywh_to_xyxy(src_boxes),
+            box_cxcywh_to_xyxy(target_boxes)))
         losses['loss_giou'] = loss_giou.sum() / num_boxes
         return losses
 
-    def loss_masks(self, outputs, targets, indices, num_boxes):
-        """Compute the losses related to the masks: the focal loss and the dice loss.
-           targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
-        """
-        assert "pred_masks" in outputs
+    ####### Not needed as bboxes used
+    # def loss_masks(self, outputs, targets, indices, num_boxes):
+    #     """Compute the losses related to the masks: the focal loss and the dice loss.
+    #        targets dicts must contain the key "masks" containing a tensor of dim [nb_target_boxes, h, w]
+    #     """
+    #     assert "pred_masks" in outputs
 
-        src_idx = self._get_src_permutation_idx(indices)
-        tgt_idx = self._get_tgt_permutation_idx(indices)
-        src_masks = outputs["pred_masks"]
-        src_masks = src_masks[src_idx]
-        masks = [t["masks"] for t in targets]
-        # TODO use valid to mask invalid areas due to padding in loss
-        target_masks, valid = nested_tensor_from_tensor_list(masks).decompose()
-        target_masks = target_masks.to(src_masks)
-        target_masks = target_masks[tgt_idx]
+    #     src_idx = self._get_src_permutation_idx(indices)
+    #     tgt_idx = self._get_tgt_permutation_idx(indices)
+    #     src_masks = outputs["pred_masks"]
+    #     src_masks = src_masks[src_idx]
+    #     masks = [t["masks"] for t in targets]
+    #     # TODO use valid to mask invalid areas due to padding in loss
+    #     target_masks, valid = nested_tensor_from_tensor_list(masks).decompose()
+    #     target_masks = target_masks.to(src_masks)
+    #     target_masks = target_masks[tgt_idx]
 
-        # upsample predictions to the target size
-        src_masks = interpolate(src_masks[:, None], size=target_masks.shape[-2:],
-                                mode="bilinear", align_corners=False)
-        src_masks = src_masks[:, 0].flatten(1)
+    #     # upsample predictions to the target size
+    #     src_masks = interpolate(src_masks[:, None], size=target_masks.shape[-2:],
+    #                             mode="bilinear", align_corners=False)
+    #     src_masks = src_masks[:, 0].flatten(1)
 
-        target_masks = target_masks.flatten(1)
-        target_masks = target_masks.view(src_masks.shape)
-        losses = {
-            "loss_mask": sigmoid_focal_loss(src_masks, target_masks, num_boxes),
-            "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
-        }
-        return losses
+    #     target_masks = target_masks.flatten(1)
+    #     target_masks = target_masks.view(src_masks.shape)
+    #     losses = {
+    #         "loss_mask": sigmoid_focal_loss(src_masks, target_masks, num_boxes),
+    #         "loss_dice": dice_loss(src_masks, target_masks, num_boxes),
+    #     }
+    #     return losses
 
     def _get_src_permutation_idx(self, indices):
         # permute predictions following indices
@@ -207,7 +210,6 @@ class SetCriterion(nn.Module):
             'labels': self.loss_labels,
             'cardinality': self.loss_cardinality,
             'boxes': self.loss_boxes,
-            'masks': self.loss_masks
         }
         assert loss in loss_map, f'do you really want to compute {loss} loss?'
         return loss_map[loss](outputs, targets, indices, num_boxes, **kwargs)
@@ -241,9 +243,6 @@ class SetCriterion(nn.Module):
             for i, aux_outputs in enumerate(outputs['aux_outputs']):
                 indices = self.matcher(aux_outputs, targets)
                 for loss in self.losses:
-                    if loss == 'masks':
-                        # Intermediate masks losses are too costly to compute, we ignore them.
-                        continue
                     kwargs = {}
                     if loss == 'labels':
                         # Logging is enabled only for the last layer
@@ -253,6 +252,36 @@ class SetCriterion(nn.Module):
                     losses.update(l_dict)
 
         return losses
+
+def get_world_size():
+    if not is_dist_avail_and_initialized():
+        return 1
+    return dist.get_world_size()
+
+def is_dist_avail_and_initialized():
+    if not dist.is_available():
+        return False
+    if not dist.is_initialized():
+        return False
+    return True
+
+@torch.no_grad()
+def accuracy(output, target, topk=(1,)):
+    """Computes the precision@k for the specified values of k"""
+    if target.numel() == 0:
+        return [torch.zeros([], device=output.device)]
+    maxk = max(topk)
+    batch_size = target.size(0)
+
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+
+    res = []
+    for k in topk:
+        correct_k = correct[:k].view(-1).float().sum(0)
+        res.append(correct_k.mul_(100.0 / batch_size))
+    return res
 
 #### Taken straight from https://github.com/facebookresearch/detr/blob/main/util/box_ops.py
 def box_cxcywh_to_xyxy(x):

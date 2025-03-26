@@ -164,8 +164,6 @@ def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list, num_queries=
             max_rotate=0,
             max_lighting=0.05
         )
-
-
     )
 
     dls = dblock.dataloaders(all_items, bs=bs, num_workers=4)
