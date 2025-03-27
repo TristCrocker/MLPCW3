@@ -39,28 +39,33 @@ nw = 4    # number of workers for data loader
 dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
 
 #Define model
-# model = Detr()
-# sys.stdout.flush()
+model = Detr()
+sys.stdout.flush()
 
 # Train
 # model.train()
 # model = train_model_pretrained(dls.train)
-visualisations.visualize_batch(dls, OUTPUT_DIR, 30, 10)
+# visualisations.visualize_batch(dls, OUTPUT_DIR, 50, 10)
 
 #Save Model
 # print("STARTING")
-# model_path = os.path.join(OUTPUT_DIR, "detr_model_bbox_pretrained_10.pth")
+# detr_model_bbox_pretrained_10_correct was (height, width).T
+# detr_model_bbox_pretrained_10_correct_better was (width, height).T, which seems better (10 epochs)
+# detr_model_bbox_pretrained_10_correct_better_epoch1.pth same as bove but 1 epoch
+# detr_model_bbox_pretrained_10_correct_better_epoch5.pth same as above but 5 epochs (Smaller amounts of data)
+# detr_model_bbox_pretrained_10_correct_better_epoch5_b.pth same as above but 5 epochs with all data
+model_path = os.path.join(OUTPUT_DIR, "detr_model_bbox_pretrained_10_correct_better_epoch1.pth")
 # torch.save(model.state_dict(), model_path)
 # print(f"Model saved to {model_path}")
-# model.load_state_dict(torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"), weights_only=True), strict=False)
+model.load_state_dict(torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"), weights_only=True), strict=False)
 
 # Move the model to the appropriate device
-# device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-# model.to(device)
+device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+model.to(device)
 
 # Ensure the model is in evaluation mode
-# model.eval()
+model.eval()
 
 #Test
-# acc_test = test_model(model, dls.train, 1000, OUTPUT_DIR)
+acc_test = test_model(model, dls.train, 1000, OUTPUT_DIR)
 

@@ -38,6 +38,7 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
         ax.set_title(f"Sample {i+1}")
         ax.axis("off")
 
+
         # Draw bounding boxes
         for (xmin, ymin, width, height) in corrected_bboxes:
             if xmin >= 0 and ymin >= 0 and width > 0 and height > 0:
@@ -46,3 +47,5 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
 
         plt.savefig(os.path.join(path, f"AA_bbox_image{i}.png"), dpi=600, bbox_inches="tight")
         plt.close(fig)
+
+    print("DONE")

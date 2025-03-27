@@ -30,7 +30,7 @@ def rle_to_mask(rle, height=768, width=768):
     """
     mask = np.zeros(height * width, dtype=np.uint8)
     if isinstance(rle, float) or pd.isna(rle):
-        return mask.reshape((height, width))
+        return mask.reshape((width, height))
 
     rle = list(map(int, rle.split()))
     starts, lengths = rle[0::2], rle[1::2]
@@ -38,7 +38,7 @@ def rle_to_mask(rle, height=768, width=768):
     for start, length in zip(starts, lengths):
         mask[start: start + length] = 1
 
-    return mask.reshape((height, width))
+    return mask.reshape((width, height)).T
 
 def mask_to_bbox(mask, height=256, width=256):
     y_indices, x_indices = np.where(mask == 1)
@@ -55,9 +55,9 @@ def mask_to_bbox(mask, height=256, width=256):
     cx = (xmin + xmax) / 2  # Center X
     cy = (ymin + ymax) / 2  # Center Y
 
-    # return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32)
+    return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32)
 
-    return torch.tensor([cy / height, cx / width, w / width, h / height], dtype=torch.float32)
+    # return torch.tensor([cy / height, cx / width, w / width, h / height], dtype=torch.float32)
 
 
 def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10):

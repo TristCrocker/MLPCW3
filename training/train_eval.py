@@ -71,7 +71,7 @@ def train_model(model, dataloader, epochs=10):
         sys.stdout.flush()
 
 
-def train_model_pretrained(dataloader, epochs=10):
+def train_model_pretrained(dataloader, epochs=5):
     DATASET_DIR = os.getenv("DATASET_DIR", "data")  
     model_path = os.path.join(DATASET_DIR, "pretrained_model")
 
@@ -93,8 +93,8 @@ def train_model_pretrained(dataloader, epochs=10):
         for images, (target_boxes, target_labels) in progress_bar:
             
             optimizer.zero_grad()
-            images = [image.cpu() for image in images]
-            inputs = processor(images=images, return_tensors="pt", padding=True).to(device)
+            images = images.cpu()
+            inputs = processor(images=images, return_tensors="pt").to(device)
 
             target_boxes = target_boxes.to(device, dtype=torch.float32, non_blocking=True)
             target_labels = target_labels.to(device, dtype=torch.long, non_blocking=True)
