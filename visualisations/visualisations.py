@@ -15,8 +15,8 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
 
 
     for i in range(num_images):
-        image_tensor = images_tensor[i]  # Select image
-        image = image_tensor.permute(1, 2, 0).cpu().numpy()  # Convert to (H, W, 3)
+        image_tensor = images_tensor[i] 
+        image = image_tensor.permute(1, 2, 0).cpu().numpy() 
         image_size = image.shape[0]
         bboxes = bboxes_tensor[i].cpu()
         
@@ -37,7 +37,6 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
         ax.set_aspect("auto")
         ax.set_title(f"Sample {i+1}")
         ax.axis("off")
-
 
         # Draw bounding boxes
         for (xmin, ymin, width, height) in corrected_bboxes:

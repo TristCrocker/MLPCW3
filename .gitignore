@@ -5,3 +5,4 @@ output/
 *.log
 *.err
 results/
+__pycache__

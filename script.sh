@@ -30,7 +30,7 @@ export DATASET_DIR=${TMP}/datasets/
 mkdir -p ${DATASET_DIR}
 
 if [ ! -d "${DATASET_DIR}/train_v2" ]; then
-    echo "Copying dataset to scratch space..."
+    echo "Copying dataset"
     cp -ru /home/${STUDENT_ID}/MLPCW3/data/* ${DATASET_DIR}/
 fi
 echo "Dataset is now in ${DATASET_DIR}"
@@ -42,9 +42,9 @@ mkdir -p ${OUTPUT_DIR}
 
 if [ -f "/home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_pretrained_10_correct_better_epoch5_b.pth" ]; then
     cp /home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_pretrained_10_correct_better_epoch5_b.pth ${OUTPUT_DIR}/
-    echo "Model copied to scratch space."
+    echo "Model copied"
 else
-    echo "Model file not found in home directory. Training a new model."
+    echo "Model file not found in home directory"
 fi
 
 cp -ru /home/${STUDENT_ID}/MLPCW3/data/pretrained_model ${DATASET_DIR}/

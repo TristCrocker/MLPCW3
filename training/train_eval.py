@@ -17,8 +17,6 @@ def train_model(model, dataloader, epochs=10):
     torch.cuda.memory_summary(device=None, abbreviated=False)  
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-    criterion_cls = nn.CrossEntropyLoss(ignore_index=0)
-    criterion_box = nn.L1Loss()
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")  
     model.to(device)
@@ -181,7 +179,6 @@ def test_model(model, dataloader, n, output_dir):
             batch_size = images.size(0)
 
             model.eval()
-
             torch.cuda.synchronize()
             start_event.record()
 

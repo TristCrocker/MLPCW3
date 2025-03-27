@@ -5,8 +5,6 @@ from torchvision.models.resnet import resnet50, ResNet50_Weights
 from torchvision.models.feature_extraction import create_feature_extractor
 
 
-
-
 class Detr(nn.Module):
     def __init__(self, num_classes=1, hidden_dim=256, num_queries=10, num_heads=8, num_encoder_layers=6, num_decoder_layers=6):
         super(Detr, self).__init__()
@@ -15,6 +13,7 @@ class Detr(nn.Module):
         self.backbone = resnet50()
         del self.backbone.fc
 
+        # Decrease size to iamge size
         self.conv1x1 = nn.Conv2d(2048, hidden_dim, kernel_size=1)
 
         self.transformer = nn.Transformer(

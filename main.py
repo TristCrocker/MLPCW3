@@ -10,13 +10,6 @@ from sklearn.model_selection import train_test_split
 from models.detr import Detr
 from training.train_eval import *
 
-if torch.cuda.is_available():
-    print(f"GPU detected: {torch.cuda.get_device_name(0)}")
-    print(f"CUDA version: {torch.version.cuda}")
-else:
-    print("No GPU detected. Running on CPU!")
-
-
 # Set paths and parameters
 DATASET_DIR = os.getenv("DATASET_DIR", "data")  
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  
@@ -47,7 +40,7 @@ sys.stdout.flush()
 # model = train_model_pretrained(dls.train)
 # visualisations.visualize_batch(dls, OUTPUT_DIR, 50, 10)
 
-#Save Model
+# Save Model
 # print("STARTING")
 # detr_model_bbox_pretrained_10_correct was (height, width).T
 # detr_model_bbox_pretrained_10_correct_better was (width, height).T, which seems better (10 epochs)
@@ -56,7 +49,7 @@ sys.stdout.flush()
 # detr_model_bbox_pretrained_10_correct_better_epoch5_b.pth same as above but 5 epochs with all data
 model_path = os.path.join(OUTPUT_DIR, "detr_model_bbox_pretrained_10_correct_better_epoch1.pth")
 # torch.save(model.state_dict(), model_path)
-# print(f"Model saved to {model_path}")
+# print("Model saved")
 model.load_state_dict(torch.load(model_path, map_location=torch.device("cuda" if torch.cuda.is_available() else "cpu"), weights_only=True), strict=False)
 
 # Move the model to the appropriate device

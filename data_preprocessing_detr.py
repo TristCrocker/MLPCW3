@@ -55,9 +55,7 @@ def mask_to_bbox(mask, height=256, width=256):
     cx = (xmin + xmax) / 2  # Center X
     cy = (ymin + ymax) / 2  # Center Y
 
-    return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32)
-
-    # return torch.tensor([cy / height, cx / width, w / width, h / height], dtype=torch.float32)
+    return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32) #Detr format output for bbox
 
 
 def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10):
@@ -79,7 +77,7 @@ def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10
     if len(masks) == 0:
         return torch.zeros((num_queries, 4)), torch.zeros(num_queries, dtype=torch.long)
 
-    # Create bboxes, where we fin mask from 768x768 image, rescale mask to 256x256 and then find bbox in terms of 256x256 iamge
+    # Create bboxes, where we find mask from 768x768 image, rescale mask to 256x256 and then find bbox in terms of 256x256 iamge
     bboxes = []
     for mask in masks:
         full_mask = rle_to_mask(mask, height=768, width=768) 
@@ -110,7 +108,6 @@ def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10
     padded_labels[:num_valid] = class_labels[:num_valid]
 
     return padded_bboxes, padded_labels
-
 
 
 def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list, num_queries=10):
