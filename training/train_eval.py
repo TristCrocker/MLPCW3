@@ -166,6 +166,7 @@ def test_model(model, dataloader, n, output_dir):
     correct_binary = 0
     f2_scores = []
     total_time = []
+    counter = 0
 
     with torch.no_grad():
         for batch in dataloader:
@@ -222,13 +223,12 @@ def test_model(model, dataloader, n, output_dir):
                         round(h.item()),
                     )
                     for (x, y, w, h), score in zip(scaled_boxes, image_scores)
-                    if score.item() > 0.5 and w > 0 and h > 0
+                    if score.item() > 0.7 and w > 0 and h > 0
                 ]
 
                 print("Boxes:", scaled_boxes)
                 print("Scores:", image_scores)
                 print("Corrected Boxes:", corrected_bboxes)
-
 
                 #Get F2
                 beta = 2
@@ -236,7 +236,7 @@ def test_model(model, dataloader, n, output_dir):
                 f2_scores.append(f2)
 
                 #Get binary class score
-                correct = binary_classif(true_box_scaled, corrected_bboxes)
+                correct, counter = binary_classif(true_box_scaled, corrected_bboxes, counter)
                 correct_binary += correct
 
                 #Get visuals
@@ -251,21 +251,22 @@ def test_model(model, dataloader, n, output_dir):
     avg_f2 = np.mean(f2_scores)
     acc = correct_binary / total_seen
     print("Final F2 Score: ", avg_f2, " ------- Final Binary Class Acc Score: ", acc, ".")
+    print("Total ship images evaluated: ", total_seen)
+    print("Number Ships: ", counter)
     
     # Calc timing stats
     total_time_np = np.array(total_time)
-    mean_time = np.mean(times)
-    std_time = np.std(times, ddof=1)  # Sample standard deviation
+    mean_time = np.mean(total_time_np)
+    std_time = np.std(total_time_np, ddof=1)  # Sample standard deviation
     z_score = 1.96  # for 95% confidence
-    margin_of_error = z_score * std_time / np.sqrt(n)
+    margin_of_error = z_score * std_time / np.sqrt(len(total_time))
     ci_low = mean_time - margin_of_error
     ci_high = mean_time + margin_of_error
 
     #Print timing stats
-    print("Timing (Mean): ", mean_time/n)
+    print("Timing (Mean): ", mean_time)
     print("Timing (STD): ", std_time)
     print("Timing (CI): (", ci_low, ",", ci_high,")")
-
 
 def f2_calc(corrected_bboxes, thresholds, true_box_scaled, beta):
     f2s = []
@@ -311,8 +312,9 @@ def visual_pred(image, corrected_boxes, img_h, img_w, output_dir, total_seen):
     plt.savefig(plot_path, dpi=600, bbox_inches="tight")
     plt.close(fig)
 
-def binary_classif(true_box_scaled, corrected_bboxes):
+def binary_classif(true_box_scaled, corrected_bboxes, counter):
     true_has_ship = len(true_box_scaled) > 0
+    counter += int(true_has_ship)
     pred_has_ship = len(corrected_bboxes) > 0
     correct = int(true_has_ship == pred_has_ship)
-    return correct
+    return correct, counter

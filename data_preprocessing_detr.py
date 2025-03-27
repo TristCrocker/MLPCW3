@@ -55,9 +55,9 @@ def mask_to_bbox(mask, height=256, width=256):
     cx = (xmin + xmax) / 2  # Center X
     cy = (ymin + ymax) / 2  # Center Y
 
-    return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32)
+    # return torch.tensor([cx / width, cy / height, w / width, h / height], dtype=torch.float32)
 
-    # return torch.tensor([cy / height, cx / width, w / width, h / height], dtype=torch.float32)
+    return torch.tensor([cy / height, cx / width, w / width, h / height], dtype=torch.float32)
 
 
 def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10):

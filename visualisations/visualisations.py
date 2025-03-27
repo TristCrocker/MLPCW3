@@ -44,5 +44,5 @@ def visualize_batch(dls, path, num_images=4, num_queries=10):
                 rect = patches.Rectangle((xmin, ymin), width, height, linewidth=2, edgecolor='r', facecolor='none', alpha=0.8, zorder=2)
                 ax.add_patch(rect)
 
-        plt.savefig(os.path.join(path, f"bbox_image{i}.png"), dpi=600, bbox_inches="tight")
+        plt.savefig(os.path.join(path, f"AA_bbox_image{i}.png"), dpi=600, bbox_inches="tight")
         plt.close(fig)

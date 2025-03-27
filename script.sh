@@ -49,8 +49,8 @@ fi
 
 cp -ru /home/${STUDENT_ID}/MLPCW3/data/pretrained_model ${DATASET_DIR}/
 
-# conda config --add channels defaults
-# conda config --add channels conda-forge
+conda config --add channels defaults
+conda config --add channels conda-forge
 conda config --set channel_priority flexible
 # conda config --set channel_priority strict
 # Activate the virtual environment
