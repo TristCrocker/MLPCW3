@@ -40,8 +40,8 @@ echo $CUDA_VISIBLE_DEVICES
 export OUTPUT_DIR=${TMP}/output/
 mkdir -p ${OUTPUT_DIR}
 
-if [ -f "/home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_correct_loss.pth" ]; then
-    cp /home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_correct_loss.pth ${OUTPUT_DIR}/
+if [ -f "/home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_pretrained_10.pth" ]; then
+    cp /home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_pretrained_10.pth ${OUTPUT_DIR}/
     echo "Model copied to scratch space."
 else
     echo "Warning: Model file not found in home directory. Training a new model."

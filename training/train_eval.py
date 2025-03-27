@@ -74,7 +74,7 @@ def train_model(model, dataloader, epochs=10):
         sys.stdout.flush()
 
 
-def train_model_pretrained(dataloader, epochs=1):
+def train_model_pretrained(dataloader, epochs=10):
     DATASET_DIR = os.getenv("DATASET_DIR", "data")  
     
     model_path = os.path.join(DATASET_DIR, "pretrained_model")
@@ -159,6 +159,9 @@ def compute_iou(boxA, boxB):
 
 def test_model(model, dataloader, n, output_dir):
 
+    start_event = torch.cuda.Event(enable_timing=True)
+    end_event = torch.cuda.Event(enable_timing=True)
+
     torch.cuda.empty_cache()
     torch.cuda.memory_summary(device=None, abbreviated=False)
 
@@ -168,6 +171,7 @@ def test_model(model, dataloader, n, output_dir):
     total_seen = 0
     correct_binary = 0
     f2_scores = []
+    total_time = []
 
     with torch.no_grad():
         for batch in dataloader:
@@ -182,7 +186,16 @@ def test_model(model, dataloader, n, output_dir):
             batch_size = images.size(0)
 
             model.eval()
+
+            torch.cuda.synchronize()
+            start_event.record()
+
             output = model(images)
+
+            end_event.record()
+            torch.cuda.synchronize()
+            total_time.append(start_event.elapsed_time(end_event))
+
             logits = output['pred_logits']  
             probs = logits.softmax(-1)        
             scores, labels = probs[:, :, :-1].max(dim=2)
@@ -245,6 +258,20 @@ def test_model(model, dataloader, n, output_dir):
     avg_f2 = np.mean(f2_scores)
     acc = correct_binary / total_seen
     print("Final F2 Score: ", avg_f2, " ------- Final Binary Class Acc Score: ", acc, ".")
+    
+    # Calc timing stats
+    total_time_np = np.array(total_time)
+    mean_time = np.mean(times)
+    std_time = np.std(times, ddof=1)  # Sample standard deviation
+    z_score = 1.96  # for 95% confidence
+    margin_of_error = z_score * std_time / np.sqrt(n)
+    ci_low = mean_time - margin_of_error
+    ci_high = mean_time + margin_of_error
+
+    #Print timing stats
+    print("Timing (Mean): ", mean_time/n)
+    print("Timing (STD): ", std_time)
+    print("Timing (CI): (", ci_low, ",", ci_high,")")
 
 
 def f2_calc(corrected_bboxes, thresholds, true_box_scaled, beta):
