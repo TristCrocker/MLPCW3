@@ -44,7 +44,7 @@ if [ -f "/home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_pretrained_10.pth" ]
     cp /home/${STUDENT_ID}/MLPCW3/results/detr_model_bbox_pretrained_10.pth ${OUTPUT_DIR}/
     echo "Model copied to scratch space."
 else
-    echo "Warning: Model file not found in home directory. Training a new model."
+    echo "Model file not found in home directory. Training a new model."
 fi
 
 cp -ru /home/${STUDENT_ID}/MLPCW3/data/pretrained_model ${DATASET_DIR}/
@@ -53,7 +53,6 @@ cp -ru /home/${STUDENT_ID}/MLPCW3/data/pretrained_model ${DATASET_DIR}/
 # conda config --add channels conda-forge
 conda config --set channel_priority flexible
 # conda config --set channel_priority strict
-# conda config --set solver classic
 # Activate the virtual environment
 source /home/${STUDENT_ID}/miniconda3/bin/activate mlpcw3
 conda install -y fastai scikit-learn pandas timm transformers "numpy==1.23.5" tqdm certifi pytorch torchvision torchaudio -c pytorch --verbose 

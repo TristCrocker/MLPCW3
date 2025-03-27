@@ -8,10 +8,9 @@ import numpy as np
 import os
 from sklearn.model_selection import train_test_split
 
-# Set paths and parameters
-DATASET_DIR = os.getenv("DATASET_DIR", "data")  # Default to "data" if not set
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  # Default to "output" if not set
-os.makedirs(OUTPUT_DIR, exist_ok=True)  # Ensure output directory exists
+DATASET_DIR = os.getenv("DATASET_DIR", "data")  
+OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output") 
+os.makedirs(OUTPUT_DIR, exist_ok=True) 
 
 PATH = 'output'
 TRAIN = os.path.join(DATASET_DIR, "train_v2")
@@ -28,25 +27,20 @@ nw = 4    # number of workers for data loader
 
 arch = resnet34
 
-# Get DataLoaders and test DataLoader using the new get_data function
+# Get DataLoaders and test DataLoader
 dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
 
-# Create a learner.
 
-# The parameter ps=0.5 will set the dropout in the head to 50%.
 learn = vision_learner(dls, arch, metrics=accuracy, ps=0.5)
 
-# Set the optimizer to Adam (this is usually the default, but you can specify it explicitly)
 learn.opt_func = Adam
 
-# Optionally: print a summary of the model
 learn.model.eval()
 learn.model
 
-# Train the model – for example, fine-tune for 3 epochs:
+# Train the model
 learn.fine_tune(3)
 
-# Optionally, obtain predictions on the test set using Test Time Augmentation (TTA)
 preds, targs = learn.tta(dl=test_dl)
 
 print(preds)
@@ -61,10 +55,9 @@ metric_names = ["Loss"] + [m.name if hasattr(m, "name") else str(m) for m in lea
 # Create a DataFrame for evaluation results
 df_eval = pd.DataFrame([eval_results], columns=metric_names)
 
-# Define output file path (ensure it's an accessible location)
+# output file path
 output_csv_path = os.path.join(OUTPUT_DIR, "evaluation_results.csv")
 
-# Save DataFrame to a CSV file
 df_eval.to_csv(output_csv_path, index=False)
 
 print(f"Model evaluation results saved to {output_csv_path}")

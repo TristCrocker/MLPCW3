@@ -11,7 +11,6 @@ from training.utils import *
 from transformers import DetrForObjectDetection, DetrFeatureExtractor
 
 
-
 def train_model(model, dataloader, epochs=10):
 
     torch.cuda.empty_cache() 
@@ -37,7 +36,6 @@ def train_model(model, dataloader, epochs=10):
     for epoch in range(epochs):
         epoch_loss = 0.0
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True, file=sys.stdout, dynamic_ncols=True)
-        print(f"Using device: {torch.cuda.get_device_name(0)}" if torch.cuda.is_available() else "Using CPU", flush=True)
 
         model.train()
         for images, (target_boxes, target_labels) in progress_bar:
@@ -46,7 +44,6 @@ def train_model(model, dataloader, epochs=10):
             images = images.to(device, dtype=torch.float32, non_blocking=True)
             target_boxes = target_boxes.to(device, dtype=torch.float32, non_blocking=True)
             target_labels = target_labels.to(device, dtype=torch.long, non_blocking=True)
-
 
             batch_targets = []
             for i in range(images.size(0)):
@@ -76,10 +73,8 @@ def train_model(model, dataloader, epochs=10):
 
 def train_model_pretrained(dataloader, epochs=10):
     DATASET_DIR = os.getenv("DATASET_DIR", "data")  
-    
     model_path = os.path.join(DATASET_DIR, "pretrained_model")
-    print("Model path:", model_path)
-    print("Contents:", os.listdir(model_path))
+
     processor = DetrFeatureExtractor.from_pretrained(model_path)
     model = DetrForObjectDetection.from_pretrained(model_path)
 
@@ -94,7 +89,6 @@ def train_model_pretrained(dataloader, epochs=10):
     for epoch in range(epochs):
         epoch_loss = 0.0
         progress_bar = tqdm(dataloader, desc=f"Epoch {epoch+1}", leave=True, file=sys.stdout, dynamic_ncols=True)
-        print(f"Using device: {torch.cuda.get_device_name(0)}" if torch.cuda.is_available() else "Using CPU", flush=True)
 
         for images, (target_boxes, target_labels) in progress_bar:
             
@@ -176,7 +170,7 @@ def test_model(model, dataloader, n, output_dir):
     with torch.no_grad():
         for batch in dataloader:
             if total_seen >= n:
-                print(f"Processed {total_seen} images.")
+                print("DONE")
                 break
 
             images, (true_bbox, true_label) = batch
@@ -212,7 +206,6 @@ def test_model(model, dataloader, n, output_dir):
                 true_box = true_bboxes[i]
                 true_label = true_labels[i]
                 
-                #Ensure has bbox
                 valid_flag = true_label == 1
                 true_box_scaled = box_cxcywh_to_xywh(true_box[valid_flag], (img_h, img_w)).tolist()
 
@@ -229,7 +222,7 @@ def test_model(model, dataloader, n, output_dir):
                         round(h.item()),
                     )
                     for (x, y, w, h), score in zip(scaled_boxes, image_scores)
-                    if score.item() > 0.0 and w > 0 and h > 0
+                    if score.item() > 0.5 and w > 0 and h > 0
                 ]
 
                 print("Boxes:", scaled_boxes)
@@ -306,7 +299,7 @@ def visual_pred(image, corrected_boxes, img_h, img_w, output_dir, total_seen):
     ax.set_xlim(0, img_w)
     ax.set_ylim(img_h, 0)
     ax.set_aspect("auto")
-    ax.set_title(f"Test Sample {total_seen}")
+    ax.set_title(f"Sample {total_seen}")
     ax.axis("off")
 
     for (xmin, ymin, width, height) in corrected_bboxes:

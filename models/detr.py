@@ -17,13 +17,12 @@ class Detr(nn.Module):
 
         self.conv1x1 = nn.Conv2d(2048, hidden_dim, kernel_size=1)
 
-        # Transformer with batch_first=True
         self.transformer = nn.Transformer(
             d_model=hidden_dim,
             nhead=num_heads,
             num_encoder_layers=num_encoder_layers,
             num_decoder_layers=num_decoder_layers,
-            batch_first=True  # <-- important change here
+            batch_first=True 
         )
 
         self.class_head = nn.Linear(hidden_dim, num_classes + 1)
@@ -52,12 +51,12 @@ class Detr(nn.Module):
         pos_enc = torch.cat([
             self.col_embed[:W].unsqueeze(0).repeat(H, 1, 1),
             self.row_embed[:H].unsqueeze(1).repeat(1, W, 1),
-        ], dim=-1).flatten(0, 1).unsqueeze(0)  # (1, H*W, hidden_dim)
+        ], dim=-1).flatten(0, 1).unsqueeze(0) 
 
-        h = h.flatten(2).permute(0, 2, 1)  # (batch, H*W, hidden_dim)
+        h = h.flatten(2).permute(0, 2, 1)
 
         batch_size = images.shape[0]
-        query_pos = self.query_pos.unsqueeze(0).repeat(batch_size, 1, 1)  # (batch, num_queries, hidden_dim)
+        query_pos = self.query_pos.unsqueeze(0).repeat(batch_size, 1, 1)
 
         transformer_output = self.transformer(
             src=pos_enc + 0.1 * h,

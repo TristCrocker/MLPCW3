@@ -2,7 +2,6 @@
 from data_preprocessing_detr import get_data
 from visualisations import visualisations
 
-# Fast.ai v2 unified imports
 from fastai.vision.all import *
 import pandas as pd
 import numpy as np
@@ -19,9 +18,9 @@ else:
 
 
 # Set paths and parameters
-DATASET_DIR = os.getenv("DATASET_DIR", "data")  # Default to "data" if not set
-OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  # Default to "output" if not set
-os.makedirs(OUTPUT_DIR, exist_ok=True)  # Ensure output directory exists
+DATASET_DIR = os.getenv("DATASET_DIR", "data")  
+OUTPUT_DIR = os.getenv("OUTPUT_DIR", "output")  
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 PATH = 'output'
 TRAIN = os.path.join(DATASET_DIR, "train_v2")
@@ -36,21 +35,19 @@ sz = 256  # image size
 bs = 32  # batch size
 nw = 4    # number of workers for data loader
 
-# Get DataLoaders and test DataLoader using the new get_data function
+# Get DataLoaders and test DataLoader
 dls, test_dl = get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
 
 #Define model
 model = Detr()
-# print("Starting training...")  # Check if training actually starts
 # sys.stdout.flush()
-# model.train()
 
 # Train
+# model.train()
 # model = train_model_pretrained(dls.train)
 # visualisations.visualize_batch(dls, OUTPUT_DIR, 30, 10)
 
 #Save Model
-# Last one was bbox
 print("STARTING")
 model_path = os.path.join(OUTPUT_DIR, "detr_model_bbox_pretrained_10.pth")
 # torch.save(model.state_dict(), model_path)

@@ -85,7 +85,6 @@ def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list):
 
     val_set = set(val_n)  # basenames in val set
     def is_valid(item_path):
-        # item_path is e.g. /path/to/train/filename.jpg
         fname = os.path.basename(item_path)
         return fname in val_set
 
@@ -101,9 +100,9 @@ def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list):
 
     dblock = DataBlock(
         blocks=(ImageBlock, CategoryBlock),
-        get_items=noop,           # We'll pass our item list directly
+        get_items=noop,           
         splitter=IndexSplitter(splits[1]),
-        get_x=lambda x: x,        # x is already a full path
+        get_x=lambda x: x,        
         get_y=lambda x: label_func(os.path.basename(x)),
         item_tfms=item_tfms,
         batch_tfms=batch_tfms

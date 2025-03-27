@@ -24,7 +24,6 @@ def train_set_split(PATH, TRAIN, TEST, SEGMENTATION, exclude_list):
 
     return tr_n, val_n
 
-
 def rle_to_mask(rle, height=768, width=768):
     """
     Convert run-length encoding (RLE) to a binary mask.
@@ -47,7 +46,7 @@ def mask_to_bbox(mask, height=256, width=256):
     if len(y_indices) == 0 or len(x_indices) == 0:
         return None  # No ship found
 
-    # Convert mask pixels to bounding box corners (in pixels)
+    # Convert mask pixels to bounding box corners
     xmin, xmax = x_indices.min(), x_indices.max() + 1
     ymin, ymax = y_indices.min(), y_indices.max() + 1
 
@@ -80,14 +79,14 @@ def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10
     if len(masks) == 0:
         return torch.zeros((num_queries, 4)), torch.zeros(num_queries, dtype=torch.long)
 
-    # Create bboxes, where we fine mask from 768x768 image, rescale mask to 256x256 and then find bbox in terms of 256x256 iamge
+    # Create bboxes, where we fin mask from 768x768 image, rescale mask to 256x256 and then find bbox in terms of 256x256 iamge
     bboxes = []
     for mask in masks:
         full_mask = rle_to_mask(mask, height=768, width=768) 
         
         full_mask_tensor = torch.tensor(full_mask).unsqueeze(0).float() 
 
-        resized_mask = resize(full_mask_tensor, size=(height, width), interpolation=torchvision.transforms.InterpolationMode.NEAREST).squeeze(0).byte()  # shape: (height, width)
+        resized_mask = resize(full_mask_tensor, size=(height, width), interpolation=torchvision.transforms.InterpolationMode.NEAREST).squeeze(0).byte() 
 
         bbox = mask_to_bbox(resized_mask.numpy(), height, width)
 
@@ -99,11 +98,10 @@ def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10
     if len(bboxes) == 0:
         return torch.zeros((num_queries, 4)), torch.zeros(num_queries, dtype=torch.long)
 
-    # Convert to tensor and normalize
     bboxes = torch.stack(bboxes) if len(bboxes) > 0 else torch.zeros((0, 4), dtype=torch.float32)
     class_labels = torch.ones(len(bboxes), dtype=torch.long)  # 1 = Ship class
 
-    # Pad bounding boxes & labels to `num_queries`
+    # Pad bounding boxes & labels to num_queries
     padded_bboxes = torch.zeros((num_queries, 4), dtype=torch.float32)
     padded_labels = torch.zeros(num_queries, dtype=torch.long)
 
@@ -117,7 +115,6 @@ def label_func(fname, seg_df, height=256, width=256, num_queries=20, min_size=10
 
 def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list, num_queries=10):
     """
-    Builds a DataLoaders object using Fast.ai v2's DataBlock API.
 
     Arguments:
     sz (int) : image size
@@ -136,7 +133,6 @@ def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list, num_queries=
     tr_n, val_n = train_set_split(PATH, TRAIN, TEST, SEGMENTATION, exclude_list)
     seg_df = pd.read_csv(SEGMENTATION).set_index("ImageId")
 
-    # Build lists of train/val image paths
     train_items = [os.path.join(TRAIN, f) for f in tr_n]
     val_items = [os.path.join(TRAIN, f) for f in val_n]
     all_items = train_items + val_items
@@ -152,7 +148,7 @@ def get_data(sz, bs, PATH, TRAIN, TEST, SEGMENTATION, exclude_list, num_queries=
         return label_func(os.path.basename(x), seg_df, height=sz, width=sz, num_queries=num_queries)
 
     dblock = DataBlock(
-        blocks=(ImageBlock, (BBoxBlock, BBoxLblBlock)),  # Bounding Boxes & Labels
+        blocks=(ImageBlock, (BBoxBlock, BBoxLblBlock)),
         get_items=noop,
         splitter=IndexSplitter(splits[1]),
         get_x=lambda x: x,
