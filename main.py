@@ -42,11 +42,6 @@ sys.stdout.flush()
 
 # Save Model
 # print("STARTING")
-# detr_model_bbox_pretrained_10_correct was (height, width).T
-# detr_model_bbox_pretrained_10_correct_better was (width, height).T, which seems better (10 epochs)
-# detr_model_bbox_pretrained_10_correct_better_epoch1.pth same as bove but 1 epoch
-# detr_model_bbox_pretrained_10_correct_better_epoch5.pth same as above but 5 epochs (Smaller amounts of data)
-# detr_model_bbox_pretrained_10_correct_better_epoch5_b.pth same as above but 5 epochs with all data
 model_path = os.path.join(OUTPUT_DIR, "detr_model_bbox_pretrained_10_correct_better_epoch1.pth")
 # torch.save(model.state_dict(), model_path)
 # print("Model saved")
@@ -60,5 +55,5 @@ model.to(device)
 model.eval()
 
 #Test
-acc_test = test_model(model, dls.train, 1000, OUTPUT_DIR)
+acc_test = test_model(model, dls.test, 1000, OUTPUT_DIR)
 
