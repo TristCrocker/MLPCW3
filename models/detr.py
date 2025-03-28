@@ -60,7 +60,7 @@ class Detr(nn.Module):
         transformer_output = self.transformer(
             src=pos_enc + 0.1 * h,
             tgt=query_pos
-        )  # (batch, num_queries, hidden_dim)
+        ) 
 
         pred_logits = self.class_head(transformer_output)
         pred_boxes = self.bbox_head(transformer_output).sigmoid()

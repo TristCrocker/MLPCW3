@@ -7,7 +7,7 @@ import torch.distributed as dist
 import torch.nn.functional as F
 ###### This file contains util such as hungarian matcher, SetCriterion and some utils for conversion straight from the facebook DETR repo (https://github.com/facebookresearch/detr)
 
-##### Straight from https://github.com/facebookresearch/detr/blob/main/models/matcher.py
+##### From https://github.com/facebookresearch/detr/blob/main/models/matcher.py
 class HungarianMatcher(nn.Module):
     """This class computes an assignment between the targets and the predictions of the network
 
@@ -81,7 +81,7 @@ class HungarianMatcher(nn.Module):
         return [(torch.as_tensor(i, dtype=torch.int64), torch.as_tensor(j, dtype=torch.int64)) for i, j in indices]
 
 
-######## Straight from https://github.com/facebookresearch/detr/blob/main/models/detr.py
+######## From https://github.com/facebookresearch/detr/blob/main/models/detr.py
 class SetCriterion(nn.Module):
     """ This class computes the loss for DETR.
     The process happens in two steps:
@@ -253,7 +253,7 @@ def accuracy(output, target, topk=(1,)):
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
 
-#### Taken straight from https://github.com/facebookresearch/detr/blob/main/util/box_ops.py
+#### From https://github.com/facebookresearch/detr/blob/main/util/box_ops.py
 def box_cxcywh_to_xyxy(x):
     x_c, y_c, w, h = x.unbind(-1)
     b = [(x_c - 0.5 * w), (y_c - 0.5 * h),
