@@ -300,7 +300,7 @@ def visual_pred(image, corrected_boxes, img_h, img_w, output_dir, total_seen):
     ax.set_title(f"Sample {total_seen}")
     ax.axis("off")
 
-    for (xmin, ymin, width, height) in corrected_bboxes:
+    for (xmin, ymin, width, height) in corrected_boxes:
         rect = patches.Rectangle((xmin, ymin), width, height, linewidth=2,
                                     edgecolor='r', facecolor='none', alpha=0.8, zorder=2)
         ax.add_patch(rect)
